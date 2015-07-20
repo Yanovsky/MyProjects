@@ -89,6 +89,12 @@ public class PhoneBookFrame extends RetentiveFrame {
             VCard card = new VCard();
             card.setStructuredName(new StructuredName());
             CardDialog cardDialog = new CardDialog(card, PhoneBookFrame.this);
+            if (cardDialogBounds == null) {
+                cardDialog.setSize(new Dimension(653, 800));
+                cardDialog.setLocationRelativeTo(null);
+            } else {
+                cardDialog.setBounds(cardDialogBounds);
+            }
             if (cardDialog.showDialog() == CardDialog.APPROVE_OPTION) {
                 final int inserted = model.getAddCard(card);
                 tblBook.getSelectionModel().setSelectionInterval(inserted, inserted);
@@ -99,6 +105,7 @@ public class PhoneBookFrame extends RetentiveFrame {
                     }
                 });
             }
+            setCardDialogBounds(cardDialog.getBounds());
         }
     };
     private Action actDeleteRecord = new AbstractAction("Удалить запись") {
