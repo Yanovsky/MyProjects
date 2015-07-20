@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ConfiguratorApi"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CrystalTestUtils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GoodsCiggyEntity"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GoodsPieceEntity"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GoodsPieceWeightEntity"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GoodsSpiritsPlugin"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
