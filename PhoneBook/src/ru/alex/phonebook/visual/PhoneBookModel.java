@@ -19,6 +19,7 @@ import net.coobird.thumbnailator.Thumbnailator;
 
 import org.apache.commons.lang.StringUtils;
 
+import ru.alex.phonebook.visual.VCardUtils.IPredicate;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.parameter.TelephoneType;
@@ -28,8 +29,16 @@ import ezvcard.property.Telephone;
 public class PhoneBookModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
     private static final String[] columnNames = new String[] {"Абонент", "Телефоны", "Фото"};
+    private List<VCard> originalPhonebook = new ArrayList<VCard>();
     private List<VCard> phonebook = new ArrayList<VCard>();
     private File phoneBookFile;
+    private String filter = "";
+    private IPredicate<VCard> filterPredicate = new VCardUtils.IPredicate<VCard>() {
+        @Override
+        public boolean apply(VCard card) {
+            return StringUtils.isEmpty(filter) || StringUtils.containsIgnoreCase(getAbonentName(card), filter) || StringUtils.containsIgnoreCase(getPhoneNumbers(card), filter);
+        }
+    };
     private Comparator<? super VCard> nameSorter = new Comparator<VCard>() {
         @Override
         public int compare(VCard card1, VCard card2) {
@@ -43,9 +52,9 @@ public class PhoneBookModel extends AbstractTableModel {
 
     public void setPhoneBookFile(File phoneBookFile) throws IOException {
         if (phoneBookFile != null && phoneBookFile.exists()) {
-            phonebook = Ezvcard.parse(phoneBookFile).all();
-            Collections.sort(phonebook, nameSorter);
-            fireTableDataChanged();
+            originalPhonebook = Ezvcard.parse(phoneBookFile).all();
+            Collections.sort(originalPhonebook, nameSorter);
+            setFilter(null);
         }
         this.phoneBookFile = phoneBookFile;
     }
@@ -55,21 +64,17 @@ public class PhoneBookModel extends AbstractTableModel {
     };
 
     public List<VCard> getPhoneBook() {
-        return phonebook;
+        return originalPhonebook;
     }
 
     public VCard getCardAt(int rowIndex) {
         return phonebook.get(rowIndex);
     }
 
-    public void setCardAt(int rowIndex, VCard card) {
-        phonebook.set(rowIndex, card);
-        fireTableRowsUpdated(rowIndex, rowIndex);
-    }
-
     public int getAddCard(VCard card) {
-        phonebook.add(card);
-        Collections.sort(phonebook, nameSorter);
+        originalPhonebook.add(card);
+        Collections.sort(originalPhonebook, nameSorter);
+        setFilter(filter);
         int result = phonebook.indexOf(card);
         fireTableDataChanged();
         return result;
@@ -97,8 +102,7 @@ public class PhoneBookModel extends AbstractTableModel {
             if (card != null) {
                 switch (columnIndex) {
                     case 0:
-                        StructuredName sName = card.getStructuredName();
-                        return (StringUtils.defaultString(sName.getFamily(), "") + " " + StringUtils.defaultString(sName.getGiven(), "")).trim();
+                        return getAbonentName(card);
                     case 1:
                         return getPhoneNumbers(card);
                     case 2:
@@ -109,6 +113,11 @@ public class PhoneBookModel extends AbstractTableModel {
             }
         }
         return null;
+    }
+
+    private String getAbonentName(VCard card) {
+        StructuredName sName = card.getStructuredName();
+        return (StringUtils.defaultString(sName.getFamily(), "") + " " + StringUtils.defaultString(sName.getGiven(), "")).trim();
     }
 
     private String getPhoneNumbers(VCard card) {
@@ -169,6 +178,14 @@ public class PhoneBookModel extends AbstractTableModel {
     public void removeCard(int cardIndex) {
         phonebook.remove(cardIndex);
         fireTableRowsDeleted(cardIndex, cardIndex);
+    }
+
+    public void setFilter(final String filter) {
+        if (!StringUtils.equalsIgnoreCase(this.filter, filter)) {
+            this.filter = filter;
+            phonebook = (List<VCard>) VCardUtils.filter(originalPhonebook, filterPredicate);
+            fireTableDataChanged();
+        }
     }
 
 }

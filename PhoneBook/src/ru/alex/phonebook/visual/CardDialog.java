@@ -216,7 +216,7 @@ public class CardDialog extends JDialog {
         }
     };
 
-    public CardDialog(VCard card, Component parent) {
+    public CardDialog(VCard card) {
         this.card = card;
 
         setIconImage(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/ru/alex/phonebook/img/main.png")));
@@ -232,7 +232,7 @@ public class CardDialog extends JDialog {
             }
         });
         setModal(true);
-        getContentPane().setLayout(new BorderLayout());
+        contentPanel.setLayout(new BorderLayout());
         contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
         GridBagLayout gbl_contentPanel = new GridBagLayout();
@@ -250,16 +250,16 @@ public class CardDialog extends JDialog {
             gbc_label.gridy = 0;
             contentPanel.add(label, gbc_label);
         }
-        {
-            edtPrefix = new JTextField(nameData.getPrefixes() != null && nameData.getPrefixes().size() > 0 ? nameData.getPrefixes().get(0) : "");
-            GridBagConstraints gbc_edtPrefix = new GridBagConstraints();
-            gbc_edtPrefix.insets = new Insets(0, 0, 5, 5);
-            gbc_edtPrefix.fill = GridBagConstraints.HORIZONTAL;
-            gbc_edtPrefix.gridx = 1;
-            gbc_edtPrefix.gridy = 0;
-            contentPanel.add(edtPrefix, gbc_edtPrefix);
-            edtPrefix.setColumns(10);
-        }
+
+        edtPrefix = new JTextField(nameData.getPrefixes() != null && nameData.getPrefixes().size() > 0 ? nameData.getPrefixes().get(0) : "");
+        GridBagConstraints gbc_edtPrefix = new GridBagConstraints();
+        gbc_edtPrefix.insets = new Insets(0, 0, 5, 5);
+        gbc_edtPrefix.fill = GridBagConstraints.HORIZONTAL;
+        gbc_edtPrefix.gridx = 1;
+        gbc_edtPrefix.gridy = 0;
+        contentPanel.add(edtPrefix, gbc_edtPrefix);
+        edtPrefix.setColumns(10);
+
         {
             JPanel panel = new JPanel();
             panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -272,40 +272,35 @@ public class CardDialog extends JDialog {
             gbc_panel.gridy = 0;
             contentPanel.add(panel, gbc_panel);
             panel.setLayout(new BorderLayout(0, 0));
-            {
-                Icon photo = getPhoto();
 
-                lblPhotoDescription = new JLabel(getPhotoDescription());
-                lblPhotoDescription.setHorizontalAlignment(SwingConstants.CENTER);
-                panel.add(lblPhotoDescription, BorderLayout.NORTH);
+            Icon photo = getPhoto();
 
-                lblPhoto = new JLabel(photo);
-                lblPhoto.setMinimumSize(new Dimension(300, 300));
-                panel.add(lblPhoto, BorderLayout.CENTER);
-                lblPhoto.setPreferredSize(new Dimension(300, 300));
+            lblPhotoDescription = new JLabel(getPhotoDescription());
+            lblPhotoDescription.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(lblPhotoDescription, BorderLayout.NORTH);
 
-                {
-                    JPanel panel_1 = new JPanel();
-                    FlowLayout flowLayout = (FlowLayout) panel_1.getLayout();
-                    flowLayout.setAlignment(FlowLayout.TRAILING);
-                    panel.add(panel_1, BorderLayout.SOUTH);
-                    {
-                        JButton btnLoad = new JButton(actOpenPhoto);
-                        btnLoad.setMargin(new Insets(5, 5, 5, 5));
-                        panel_1.add(btnLoad);
-                    }
-                    {
-                        JButton btnSave = new JButton(actSavePhoto);
-                        btnSave.setMargin(new Insets(5, 5, 5, 5));
-                        panel_1.add(btnSave);
-                    }
-                    {
-                        JButton button = new JButton(actClearPhoto);
-                        button.setMargin(new Insets(5, 5, 5, 5));
-                        panel_1.add(button);
-                    }
-                }
-            }
+            lblPhoto = new JLabel(photo);
+            lblPhoto.setMinimumSize(new Dimension(300, 300));
+            panel.add(lblPhoto, BorderLayout.CENTER);
+            lblPhoto.setPreferredSize(new Dimension(300, 300));
+
+            JPanel panel_1 = new JPanel();
+            FlowLayout flowLayout = (FlowLayout) panel_1.getLayout();
+            flowLayout.setAlignment(FlowLayout.TRAILING);
+            panel.add(panel_1, BorderLayout.SOUTH);
+
+            JButton btnLoad = new JButton(actOpenPhoto);
+            btnLoad.setMargin(new Insets(5, 5, 5, 5));
+            panel_1.add(btnLoad);
+
+            JButton btnSave = new JButton(actSavePhoto);
+            btnSave.setMargin(new Insets(5, 5, 5, 5));
+            panel_1.add(btnSave);
+
+            JButton button = new JButton(actClearPhoto);
+            button.setMargin(new Insets(5, 5, 5, 5));
+            panel_1.add(button);
+
         }
         {
             JLabel label = new JLabel("Фамилия");
@@ -316,77 +311,69 @@ public class CardDialog extends JDialog {
             gbc_label.gridy = 1;
             contentPanel.add(label, gbc_label);
         }
+        edtSurname = new JTextField(nameData.getFamily());
+        GridBagConstraints gbc_edtSurname = new GridBagConstraints();
+        gbc_edtSurname.insets = new Insets(0, 0, 5, 5);
+        gbc_edtSurname.fill = GridBagConstraints.HORIZONTAL;
+        gbc_edtSurname.gridx = 1;
+        gbc_edtSurname.gridy = 1;
+        contentPanel.add(edtSurname, gbc_edtSurname);
+        edtSurname.setColumns(10);
         {
-            edtSurname = new JTextField(nameData.getFamily());
-            GridBagConstraints gbc_edtSurname = new GridBagConstraints();
-            gbc_edtSurname.insets = new Insets(0, 0, 5, 5);
-            gbc_edtSurname.fill = GridBagConstraints.HORIZONTAL;
-            gbc_edtSurname.gridx = 1;
-            gbc_edtSurname.gridy = 1;
-            contentPanel.add(edtSurname, gbc_edtSurname);
-            edtSurname.setColumns(10);
-        }
-        {
-            JLabel lblNewLabel = new JLabel("Имя");
+            JLabel label = new JLabel("Имя");
             GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
             gbc_lblNewLabel.anchor = GridBagConstraints.EAST;
             gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
             gbc_lblNewLabel.gridx = 0;
             gbc_lblNewLabel.gridy = 2;
-            contentPanel.add(lblNewLabel, gbc_lblNewLabel);
+            contentPanel.add(label, gbc_lblNewLabel);
         }
+        edtName = new JTextField(nameData.getGiven());
+        GridBagConstraints gbc_edtName = new GridBagConstraints();
+        gbc_edtName.insets = new Insets(0, 0, 5, 5);
+        gbc_edtName.fill = GridBagConstraints.HORIZONTAL;
+        gbc_edtName.gridx = 1;
+        gbc_edtName.gridy = 2;
+        contentPanel.add(edtName, gbc_edtName);
+        edtName.setColumns(10);
         {
-            edtName = new JTextField(nameData.getGiven());
-            GridBagConstraints gbc_edtName = new GridBagConstraints();
-            gbc_edtName.insets = new Insets(0, 0, 5, 5);
-            gbc_edtName.fill = GridBagConstraints.HORIZONTAL;
-            gbc_edtName.gridx = 1;
-            gbc_edtName.gridy = 2;
-            contentPanel.add(edtName, gbc_edtName);
-            edtName.setColumns(10);
-        }
-        {
-            JLabel lblNewLabel_2 = new JLabel("Отчество");
+            JLabel label = new JLabel("Отчество");
             GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
             gbc_lblNewLabel_2.anchor = GridBagConstraints.EAST;
             gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
             gbc_lblNewLabel_2.gridx = 0;
             gbc_lblNewLabel_2.gridy = 3;
-            contentPanel.add(lblNewLabel_2, gbc_lblNewLabel_2);
+            contentPanel.add(label, gbc_lblNewLabel_2);
         }
+        edtParentName = new JTextField(nameData.getAdditional() != null && nameData.getAdditional().size() > 0 ? nameData.getAdditional().get(0) : "");
+        GridBagConstraints gbc_edtParentName = new GridBagConstraints();
+        gbc_edtParentName.insets = new Insets(0, 0, 5, 5);
+        gbc_edtParentName.fill = GridBagConstraints.HORIZONTAL;
+        gbc_edtParentName.gridx = 1;
+        gbc_edtParentName.gridy = 3;
+        contentPanel.add(edtParentName, gbc_edtParentName);
+        edtParentName.setColumns(10);
         {
-            edtParentName = new JTextField(nameData.getAdditional() != null && nameData.getAdditional().size() > 0 ? nameData.getAdditional().get(0) : "");
-            GridBagConstraints gbc_edtParentName = new GridBagConstraints();
-            gbc_edtParentName.insets = new Insets(0, 0, 5, 5);
-            gbc_edtParentName.fill = GridBagConstraints.HORIZONTAL;
-            gbc_edtParentName.gridx = 1;
-            gbc_edtParentName.gridy = 3;
-            contentPanel.add(edtParentName, gbc_edtParentName);
-            edtParentName.setColumns(10);
-        }
-        {
-            JLabel lblNewLabel_3 = new JLabel("Суффикс");
+            JLabel label = new JLabel("Суффикс");
             GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
             gbc_lblNewLabel_3.anchor = GridBagConstraints.NORTHEAST;
             gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
             gbc_lblNewLabel_3.gridx = 0;
             gbc_lblNewLabel_3.gridy = 4;
-            contentPanel.add(lblNewLabel_3, gbc_lblNewLabel_3);
+            contentPanel.add(label, gbc_lblNewLabel_3);
         }
+        edtSuffix = new JTextField(nameData.getSuffixes() != null && nameData.getSuffixes().size() > 0 ? nameData.getSuffixes().get(0) : "");
+        GridBagConstraints gbc_edtSuffix = new GridBagConstraints();
+        gbc_edtSuffix.anchor = GridBagConstraints.NORTH;
+        gbc_edtSuffix.insets = new Insets(0, 0, 5, 5);
+        gbc_edtSuffix.fill = GridBagConstraints.HORIZONTAL;
+        gbc_edtSuffix.gridx = 1;
+        gbc_edtSuffix.gridy = 4;
+        contentPanel.add(edtSuffix, gbc_edtSuffix);
+        edtSuffix.setColumns(10);
         {
-            edtSuffix = new JTextField(nameData.getSuffixes() != null && nameData.getSuffixes().size() > 0 ? nameData.getSuffixes().get(0) : "");
-            GridBagConstraints gbc_edtSuffix = new GridBagConstraints();
-            gbc_edtSuffix.anchor = GridBagConstraints.NORTH;
-            gbc_edtSuffix.insets = new Insets(0, 0, 5, 5);
-            gbc_edtSuffix.fill = GridBagConstraints.HORIZONTAL;
-            gbc_edtSuffix.gridx = 1;
-            gbc_edtSuffix.gridy = 4;
-            contentPanel.add(edtSuffix, gbc_edtSuffix);
-            edtSuffix.setColumns(10);
-        }
-        {
-            JPanel panel = new JPanel();
-            panel.setBorder(new TitledBorder(null, "\u0422\u0435\u043B\u0435\u0444\u043E\u043D\u044B", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+            JPanel pnlContent = new JPanel();
+            pnlContent.setBorder(new TitledBorder(null, "Телефоны", TitledBorder.LEADING, TitledBorder.TOP, null, null));
             GridBagConstraints gbc_panel = new GridBagConstraints();
             gbc_panel.gridheight = 3;
             gbc_panel.gridwidth = 2;
@@ -394,105 +381,92 @@ public class CardDialog extends JDialog {
             gbc_panel.fill = GridBagConstraints.BOTH;
             gbc_panel.gridx = 0;
             gbc_panel.gridy = 5;
-            contentPanel.add(panel, gbc_panel);
-            panel.setLayout(new BorderLayout(0, 0));
-            {
-                JPanel panel_1 = new JPanel();
-                panel.add(panel_1, BorderLayout.NORTH);
-                FlowLayout flowLayout = (FlowLayout) panel_1.getLayout();
-                flowLayout.setAlignment(FlowLayout.LEADING);
-                {
-                    JButton btnNewButton = new JButton(actAddTelephone);
-                    panel_1.add(btnNewButton);
-                }
-            }
-            {
-                JScrollPane scrollPane = new JScrollPane();
-                scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
-                panel.add(scrollPane, BorderLayout.CENTER);
-                {
-                    pnlTelephones = new JPanel(new ListLayout());
-                    scrollPane.setViewportView(pnlTelephones);
-                }
-            }
+            contentPanel.add(pnlContent, gbc_panel);
+            pnlContent.setLayout(new BorderLayout(0, 0));
+
+            JPanel pnlButton = new JPanel();
+            pnlContent.add(pnlButton, BorderLayout.NORTH);
+            FlowLayout flowLayout = (FlowLayout) pnlButton.getLayout();
+            flowLayout.setAlignment(FlowLayout.LEADING);
+
+            JButton btnNewButton = new JButton(actAddTelephone);
+            pnlButton.add(btnNewButton);
+
+            JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            pnlContent.add(scrollPane, BorderLayout.CENTER);
+
+            pnlTelephones = new JPanel(new ListLayout());
+            scrollPane.setViewportView(pnlTelephones);
+
         }
         {
-            JPanel panel_1 = new JPanel();
-            panel_1.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "E-Mail", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+            JPanel pnlContent = new JPanel();
+            pnlContent.setBorder(new TitledBorder(null, "E-Mail", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
             GridBagConstraints gbc_panel_1 = new GridBagConstraints();
             gbc_panel_1.insets = new Insets(0, 0, 5, 0);
             gbc_panel_1.fill = GridBagConstraints.BOTH;
             gbc_panel_1.gridx = 2;
             gbc_panel_1.gridy = 7;
-            contentPanel.add(panel_1, gbc_panel_1);
-            panel_1.setLayout(new BorderLayout(0, 0));
-            {
-                JPanel panel_2 = new JPanel();
-                panel_1.add(panel_2, BorderLayout.NORTH);
-                FlowLayout flowLayout = (FlowLayout) panel_2.getLayout();
-                flowLayout.setAlignment(FlowLayout.LEADING);
-                {
-                    JButton button = new JButton(actAddEmail);
-                    panel_2.add(button);
-                }
-            }
-            {
-                JScrollPane scrollPane_1 = new JScrollPane();
-                scrollPane_1.setBorder(new EmptyBorder(0, 0, 0, 0));
-                panel_1.add(scrollPane_1, BorderLayout.CENTER);
-                {
-                    pnlEmail = new JPanel(new ListLayout());
-                    scrollPane_1.setViewportView(pnlEmail);
-                    pnlEmail.setLayout(new ListLayout());
-                }
-            }
+            contentPanel.add(pnlContent, gbc_panel_1);
+            pnlContent.setLayout(new BorderLayout(0, 0));
+
+            JPanel pnlButton = new JPanel();
+            pnlContent.add(pnlButton, BorderLayout.NORTH);
+            FlowLayout flowLayout = (FlowLayout) pnlButton.getLayout();
+            flowLayout.setAlignment(FlowLayout.LEADING);
+
+            JButton button = new JButton(actAddEmail);
+            pnlButton.add(button);
+
+            JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            pnlContent.add(scrollPane, BorderLayout.CENTER);
+
+            pnlEmail = new JPanel(new ListLayout());
+            scrollPane.setViewportView(pnlEmail);
+            pnlEmail.setLayout(new ListLayout());
+
         }
         {
-            JPanel panel_2 = new JPanel();
-            panel_2.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\u0410\u0434\u0440\u0435\u0441", TitledBorder.LEADING, TitledBorder.TOP, null,
-                new Color(0, 0, 0)));
+            JPanel pnlContent = new JPanel();
+            pnlContent.setBorder(new TitledBorder(null, "Адрес", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
             GridBagConstraints gbc_panel_2 = new GridBagConstraints();
             gbc_panel_2.gridwidth = 3;
             gbc_panel_2.fill = GridBagConstraints.BOTH;
             gbc_panel_2.gridx = 0;
             gbc_panel_2.gridy = 8;
-            contentPanel.add(panel_2, gbc_panel_2);
-            panel_2.setLayout(new BorderLayout(0, 0));
-            {
-                JPanel panel = new JPanel();
-                FlowLayout flowLayout = (FlowLayout) panel.getLayout();
-                flowLayout.setAlignment(FlowLayout.LEADING);
-                panel_2.add(panel, BorderLayout.NORTH);
-                {
-                    JButton button = new JButton(actAddAddress);
-                    panel.add(button);
-                }
-            }
-            {
-                JScrollPane scrollPane = new JScrollPane();
-                scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
-                panel_2.add(scrollPane, BorderLayout.CENTER);
-                {
-                    pnlAddresses = new JPanel(new ListLayout());
-                    scrollPane.setViewportView(pnlAddresses);
-                    pnlAddresses.setLayout(new ListLayout());
-                }
-            }
+            contentPanel.add(pnlContent, gbc_panel_2);
+            pnlContent.setLayout(new BorderLayout(0, 0));
+
+            JPanel pnlButton = new JPanel();
+            FlowLayout flowLayout = (FlowLayout) pnlButton.getLayout();
+            flowLayout.setAlignment(FlowLayout.LEADING);
+            pnlContent.add(pnlButton, BorderLayout.NORTH);
+
+            JButton button = new JButton(actAddAddress);
+            pnlButton.add(button);
+
+            JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            pnlContent.add(scrollPane, BorderLayout.CENTER);
+
+            pnlAddresses = new JPanel(new ListLayout());
+            scrollPane.setViewportView(pnlAddresses);
+            pnlAddresses.setLayout(new ListLayout());
         }
-        {
-            JPanel buttonPane = new JPanel();
-            buttonPane.setLayout(new FlowLayout(FlowLayout.TRAILING));
-            getContentPane().add(buttonPane, BorderLayout.SOUTH);
-            {
-                JButton okButton = new JButton(actOk);
-                buttonPane.add(okButton);
-                getRootPane().setDefaultButton(okButton);
-            }
-            {
-                JButton cancelButton = new JButton(actCancel);
-                buttonPane.add(cancelButton);
-            }
-        }
+
+        JPanel buttonPane = new JPanel();
+        buttonPane.setLayout(new FlowLayout(FlowLayout.TRAILING));
+        getContentPane().add(buttonPane, BorderLayout.SOUTH);
+
+        JButton okButton = new JButton(actOk);
+        buttonPane.add(okButton);
+        getRootPane().setDefaultButton(okButton);
+
+        JButton cancelButton = new JButton(actCancel);
+        buttonPane.add(cancelButton);
+
         loadTelephones();
         loadEmails();
         loadAddresses();
