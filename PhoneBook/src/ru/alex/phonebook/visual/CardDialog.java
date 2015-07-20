@@ -231,7 +231,6 @@ public class CardDialog extends JDialog {
                 actCancel.actionPerformed(new ActionEvent(event.getSource(), event.getID(), ""));
             }
         });
-        setBounds(100, 100, 653, 800);
         setModal(true);
         getContentPane().setLayout(new BorderLayout());
         contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -240,7 +239,7 @@ public class CardDialog extends JDialog {
         gbl_contentPanel.columnWidths = new int[] {0, 0, 0};
         gbl_contentPanel.rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 170, 200, 0};
         gbl_contentPanel.columnWeights = new double[] {0.0, 1.0, 0.0};
-        gbl_contentPanel.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+        gbl_contentPanel.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
         contentPanel.setLayout(gbl_contentPanel);
         {
             JLabel label = new JLabel("Префикс");
@@ -497,8 +496,6 @@ public class CardDialog extends JDialog {
         loadTelephones();
         loadEmails();
         loadAddresses();
-
-        setLocationRelativeTo(parent);
     }
 
     private void loadAddresses() {

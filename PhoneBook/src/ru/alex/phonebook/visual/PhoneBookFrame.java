@@ -2,7 +2,9 @@ package ru.alex.phonebook.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -40,6 +42,7 @@ import ezvcard.property.StructuredName;
 
 public class PhoneBookFrame extends RetentiveFrame {
     private static final long serialVersionUID = 1L;
+    private Rectangle cardDialogBounds = null;
     private JPanel contentPane;
     private JTextField edtPhoneBookFile;
     private JTable tblBook;
@@ -68,9 +71,14 @@ public class PhoneBookFrame extends RetentiveFrame {
         public void actionPerformed(ActionEvent e) {
             VCard card = model.getCardAt(tblBook.getSelectedRow());
             CardDialog cardDialog = new CardDialog(card, PhoneBookFrame.this);
-            if (cardDialog.showDialog() == CardDialog.APPROVE_OPTION) {
-
+            if (cardDialogBounds == null) {
+                cardDialog.setSize(new Dimension(653, 800));
+                cardDialog.setLocationRelativeTo(null);
+            } else {
+                cardDialog.setBounds(cardDialogBounds);
             }
+            cardDialog.showDialog();
+            setCardDialogBounds(cardDialog.getBounds());
         }
     };
     private Action actAddRecord = new AbstractAction("Создать запись") {
@@ -178,9 +186,25 @@ public class PhoneBookFrame extends RetentiveFrame {
         }
     }
 
+    protected void setCardDialogBounds(Rectangle cardDialogBounds) {
+        this.cardDialogBounds = cardDialogBounds;
+    }
+
+    protected Rectangle getCardDialogBounds() {
+        return cardDialogBounds;
+    }
+
     @Override
     protected void loadParameters() {
         super.loadParameters();
+        if (properties.containsKey("cardDialogBoundsW")) {
+            cardDialogBounds = new Rectangle();
+            cardDialogBounds.x = Integer.valueOf(properties.getProperty("cardDialogBoundsX", "100"));
+            cardDialogBounds.y = Integer.valueOf(properties.getProperty("cardDialogBoundsY", "100"));
+            cardDialogBounds.width = Integer.valueOf(properties.getProperty("cardDialogBoundsW", "653"));
+            cardDialogBounds.height = Integer.valueOf(properties.getProperty("cardDialogBoundsH", "800"));
+        }
+
         String phoneBookFilePath = properties.getProperty("phoneBookFile", "");
         if (phoneBookFilePath != null) {
             File f = new File(phoneBookFilePath);
@@ -193,6 +217,11 @@ public class PhoneBookFrame extends RetentiveFrame {
     @Override
     protected void saveParameters() {
         properties.setProperty("phoneBookFile", edtPhoneBookFile.getText());
+        properties.setProperty("cardDialogBoundsX", Integer.toString(cardDialogBounds.x));
+        properties.setProperty("cardDialogBoundsY", Integer.toString(cardDialogBounds.y));
+        properties.setProperty("cardDialogBoundsW", Integer.toString(cardDialogBounds.width));
+        properties.setProperty("cardDialogBoundsH", Integer.toString(cardDialogBounds.height));
+
         super.saveParameters();
     }
 
