@@ -1,4 +1,4 @@
-package ru.alex.phonebook.visual;
+package ru.alex.phonebook.components;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -17,13 +17,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import ezvcard.parameter.TelephoneType;
-import ezvcard.property.Telephone;
+import ru.alex.phonebook.classes.EMailType;
+import ezvcard.parameter.EmailType;
+import ezvcard.property.Email;
 
-public class TelephonePanel extends JPanel {
+public class EMailPanel extends JPanel {
     private static final long serialVersionUID = 1L;
-    private JTextField edtPhoneNumber;
-    private JComboBox<PhoneType> edtType;
+    private JTextField edtEmail;
+    private JComboBox<EMailType> edtType;
     private JCheckBox edtMain;
 
     private Action actDelete = new AbstractAction("удалить") {
@@ -36,7 +37,7 @@ public class TelephonePanel extends JPanel {
                     @Override
                     public void run() {
                         JPanel panel = (JPanel) getParent();
-                        panel.remove(TelephonePanel.this);
+                        panel.remove(EMailPanel.this);
                         panel.updateUI();
                     }
                 });
@@ -44,11 +45,11 @@ public class TelephonePanel extends JPanel {
         }
     };
 
-    public TelephonePanel() {
+    public EMailPanel() {
         setLayout(new BorderLayout(0, 0));
 
-        edtPhoneNumber = new JTextField();
-        add(edtPhoneNumber, BorderLayout.CENTER);
+        edtEmail = new JTextField();
+        add(edtEmail, BorderLayout.CENTER);
 
         JButton btnNewButton = new JButton(actDelete);
         add(btnNewButton, BorderLayout.EAST);
@@ -57,15 +58,15 @@ public class TelephonePanel extends JPanel {
         add(panel, BorderLayout.NORTH);
         panel.setLayout(new BorderLayout(0, 0));
 
-        edtType = new JComboBox<PhoneType>(PhoneType.values());
+        edtType = new JComboBox<EMailType>(EMailType.values());
         panel.add(edtType, BorderLayout.WEST);
 
         edtMain = new JCheckBox("Основной");
         edtMain.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                Font font = edtPhoneNumber.getFont().deriveFont(edtMain.isSelected() ? Font.BOLD : Font.PLAIN);
-                edtPhoneNumber.setFont(font);
+                Font font = edtEmail.getFont().deriveFont(edtMain.isSelected() ? Font.BOLD : Font.PLAIN);
+                edtEmail.setFont(font);
                 edtType.setFont(font);
                 edtMain.setFont(font);
             }
@@ -73,25 +74,25 @@ public class TelephonePanel extends JPanel {
         panel.add(edtMain, BorderLayout.EAST);
     }
 
-    public void setTelephone(Telephone number) {
-        edtPhoneNumber.setText(number.getText());
-        for (TelephoneType type : number.getTypes()) {
-            if (type == TelephoneType.PREF) {
+    public void setEmail(Email email) {
+        edtEmail.setText(email.getValue());
+        for (EmailType type : email.getTypes()) {
+            if (type == EmailType.PREF) {
                 edtMain.setSelected(true);
             } else {
-                edtType.setSelectedItem(PhoneType.valueOfType(type));
+                edtType.setSelectedItem(EMailType.valueOfType(type));
             }
         }
     }
 
-    public Telephone getTelephone() {
-        Telephone result = new Telephone(edtPhoneNumber.getText());
+    public Email getEmail() {
+        Email result = new Email(edtEmail.getText());
         result.getTypes().clear();
         if (edtMain.isSelected()) {
-            result.addType(TelephoneType.PREF);
+            result.addType(EmailType.PREF);
         }
-        PhoneType t = (PhoneType) edtType.getSelectedItem();
-        TelephoneType type = TelephoneType.get(t.name());
+        EMailType t = (EMailType) edtType.getSelectedItem();
+        EmailType type = EmailType.get(t.name());
         result.addType(type);
         return result;
     }

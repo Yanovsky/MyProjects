@@ -1,4 +1,4 @@
-package ru.alex.phonebook.visual;
+package ru.alex.phonebook.components;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -28,7 +28,7 @@ import ezvcard.property.Address;
 
 public class AddressPanel extends JPanel {
     private static final long serialVersionUID = 1L;
-    private JComboBox<ru.alex.phonebook.visual.AddressType> edtType;
+    private JComboBox<ru.alex.phonebook.classes.AddressType> edtType;
     private JCheckBox edtMain;
     private JTextField edtCountry;
     private JTextField edtPostalCode;
@@ -65,7 +65,7 @@ public class AddressPanel extends JPanel {
         add(panel, BorderLayout.NORTH);
         panel.setLayout(new BorderLayout(0, 0));
 
-        edtType = new JComboBox<ru.alex.phonebook.visual.AddressType>(ru.alex.phonebook.visual.AddressType.values());
+        edtType = new JComboBox<ru.alex.phonebook.classes.AddressType>(ru.alex.phonebook.classes.AddressType.values());
         panel.add(edtType, BorderLayout.WEST);
 
         edtMain = new JCheckBox("Основной");
@@ -213,7 +213,7 @@ public class AddressPanel extends JPanel {
             if (type == AddressType.PREF) {
                 edtMain.setSelected(true);
             } else {
-                edtType.setSelectedItem(ru.alex.phonebook.visual.AddressType.valueOfType(type));
+                edtType.setSelectedItem(ru.alex.phonebook.classes.AddressType.valueOfType(type));
             }
         }
     }
@@ -230,7 +230,7 @@ public class AddressPanel extends JPanel {
         if (edtMain.isSelected()) {
             result.addType(AddressType.PREF);
         }
-        ru.alex.phonebook.visual.AddressType t = (ru.alex.phonebook.visual.AddressType) edtType.getSelectedItem();
+        ru.alex.phonebook.classes.AddressType t = (ru.alex.phonebook.classes.AddressType) edtType.getSelectedItem();
         AddressType type = AddressType.get(t.name());
         result.addType(type);
         return result;

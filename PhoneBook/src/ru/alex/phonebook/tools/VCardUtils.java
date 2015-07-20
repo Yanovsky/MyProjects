@@ -1,4 +1,4 @@
-package ru.alex.phonebook.visual;
+package ru.alex.phonebook.tools;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package ru.alex.phonebook.visual;
+package ru.alex.phonebook.components;
 
 import java.awt.Component;
 import java.awt.Container;

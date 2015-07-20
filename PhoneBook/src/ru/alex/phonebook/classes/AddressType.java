@@ -1,4 +1,4 @@
-package ru.alex.phonebook.visual;
+package ru.alex.phonebook.classes;
 
 import org.apache.commons.lang.StringUtils;
 

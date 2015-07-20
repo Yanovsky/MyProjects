@@ -46,6 +46,12 @@ import net.coobird.thumbnailator.Thumbnailator;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
+import ru.alex.phonebook.classes.EmptyImage;
+import ru.alex.phonebook.components.AddressPanel;
+import ru.alex.phonebook.components.EMailPanel;
+import ru.alex.phonebook.components.ListLayout;
+import ru.alex.phonebook.components.TelephonePanel;
+import ru.alex.phonebook.tools.VCardUtils;
 import ezvcard.VCard;
 import ezvcard.parameter.AddressType;
 import ezvcard.parameter.EmailType;
@@ -62,6 +68,8 @@ public class CardDialog extends JDialog {
     public static final int CANCEL_OPTION = 1;
     public static final int APPROVE_OPTION = 0;
     public static final int ERROR_OPTION = -1;
+    private static boolean showing;
+    private static CardDialog dialog;
     private final JPanel contentPanel = new JPanel();
     private VCard card;
     private int result = ERROR_OPTION;
@@ -650,6 +658,23 @@ public class CardDialog extends JDialog {
         getContentPane().removeAll();
         dispose();
         return result;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        showing = visible;
+        dialog = visible ? this : null;
+        super.setVisible(visible);
+    }
+
+    public static boolean showing() {
+        return showing;
+    }
+
+    public static void close() {
+        if (dialog != null && dialog.isVisible()) {
+            dialog.actCancel.actionPerformed(null);
+        }
     }
 
 }

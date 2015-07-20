@@ -1,18 +1,21 @@
 package ru.alex.phonebook.visual;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.KeyEventPostProcessor;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -44,6 +47,7 @@ import javax.swing.table.TableColumn;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
+import ru.alex.phonebook.components.RetentiveFrame;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.VCardVersion;
@@ -51,6 +55,7 @@ import ezvcard.property.StructuredName;
 
 public class PhoneBookFrame extends RetentiveFrame {
     private static final long serialVersionUID = 1L;
+    private static final Font font = new Font("Verdana", Font.PLAIN, 12);
     private Rectangle cardDialogBounds = null;
     private JPanel contentPane;
     private JTextField edtPhoneBookFile;
@@ -74,7 +79,7 @@ public class PhoneBookFrame extends RetentiveFrame {
             }
         }
     };
-    private Action actEditRecord = new AbstractAction("Редактировать") {
+    private Action actEditRecord = new AbstractAction("Просмотреть/изменить") {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -86,7 +91,7 @@ public class PhoneBookFrame extends RetentiveFrame {
             setCardDialogBounds(cardDialog.getBounds());
         }
     };
-    private Action actAddRecord = new AbstractAction("Создать запись") {
+    private Action actAddRecord = new AbstractAction("Новый контакт") {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -108,7 +113,7 @@ public class PhoneBookFrame extends RetentiveFrame {
             setCardDialogBounds(cardDialog.getBounds());
         }
     };
-    private Action actDeleteRecord = new AbstractAction("Удалить запись") {
+    private Action actDeleteRecord = new AbstractAction("Удалить") {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -139,7 +144,7 @@ public class PhoneBookFrame extends RetentiveFrame {
             System.out.println("NEW BOOK");
         }
     };
-    private Action actSave = new AbstractAction("Сохранить книгу") {
+    private Action actSaveAs = new AbstractAction("Сохранить как") {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -155,48 +160,45 @@ public class PhoneBookFrame extends RetentiveFrame {
                 if (StringUtils.isEmpty(FilenameUtils.getExtension(phoneBookFile.getName()))) {
                     phoneBookFile = new File(fc.getSelectedFile().getPath() + ".vcf");
                 }
-                try {
-                    int i = tblBook.getSelectedRow();
-                    Ezvcard.write(model.getPhoneBook()).version(VCardVersion.V3_0).go(phoneBookFile);
-                    setPhoneBookFile(phoneBookFile);
-                    tblBook.getSelectionModel().setSelectionInterval(i, i);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            tblBook.scrollRectToVisible(tblBook.getCellRect(tblBook.getSelectedRow(), tblBook.getSelectedColumn(), true));
-                        }
-                    });
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                    JOptionPane.showMessageDialog(null, e1.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
-                }
+                saveBook(phoneBookFile);
             }
         }
     };
-    private KeyListener evtSearch = new KeyAdapter() {
+
+    private Action actSave = new AbstractAction("Сохранить") {
+        private static final long serialVersionUID = 1L;
+
         @Override
-        public void keyTyped(KeyEvent e) {
-            String text = edtSearch.getText();
-            if (StringUtils.isAlphaSpace(String.valueOf(e.getKeyChar()))) {
-                edtSearch.setText(text + e.getKeyChar());
-            }
-            if (e.getKeyChar() == '\b' && text.length() > 0) {
-                edtSearch.setText(text.substring(0, text.length() - 1));
-            }
-            if (e.getKeyChar() == 27) {
-                edtSearch.setText("");
-            }
+        public void actionPerformed(ActionEvent e) {
+            saveBook(model.getPhoneBookFile());
         }
     };
 
     protected void setPhoneBookFile(File phoneBookFile) {
         try {
-            edtSearch.setText(null);
             model.setPhoneBookFile(phoneBookFile);
             edtPhoneBookFile.setText(model.getPhoneBookFile().getPath());
             if (tblBook.getRowCount() > 0) {
                 tblBook.getSelectionModel().setSelectionInterval(0, 0);
             }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tblBook.scrollRectToVisible(tblBook.getCellRect(tblBook.getSelectedRow(), tblBook.getSelectedColumn(), true));
+                }
+            });
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            JOptionPane.showMessageDialog(null, e1.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    protected void saveBook(File phoneBookFile) {
+        try {
+            int i = tblBook.getSelectedRow();
+            Ezvcard.write(model.getPhoneBook()).version(VCardVersion.V3_0).go(phoneBookFile);
+            setPhoneBookFile(phoneBookFile);
+            tblBook.getSelectionModel().setSelectionInterval(i, i);
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -259,6 +261,29 @@ public class PhoneBookFrame extends RetentiveFrame {
 
     public PhoneBookFrame(String configFile) {
         super(configFile);
+
+        DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(new KeyEventPostProcessor() {
+            public boolean postProcessKeyEvent(KeyEvent e) {
+                if (e.getID() == KeyEvent.KEY_TYPED) {
+                    String text = edtSearch.getText();
+                    if (StringUtils.isAlphanumericSpace(String.valueOf(e.getKeyChar()))) {
+                        edtSearch.setText(text + e.getKeyChar());
+                    }
+                    if (e.getKeyChar() == '\b' && text.length() > 0) {
+                        edtSearch.setText(text.substring(0, text.length() - 1));
+                    }
+                    if (e.getKeyChar() == 27) {
+                        if (CardDialog.showing()) {
+                            CardDialog.close();
+                        } else {
+                            edtSearch.setText("");
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
         setIconImage(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/ru/alex/phonebook/img/main.png")));
         setTitle("Телефонная книга");
         contentPane = new JPanel();
@@ -272,21 +297,24 @@ public class PhoneBookFrame extends RetentiveFrame {
         panel.setLayout(new BorderLayout(5, 0));
 
         edtPhoneBookFile = new JTextField();
+        edtPhoneBookFile.setFont(font);
         edtPhoneBookFile.setEditable(false);
         panel.add(edtPhoneBookFile);
         edtPhoneBookFile.setColumns(10);
 
         JLabel label = new JLabel("Файл");
+        label.setFont(font);
         panel.add(label, BorderLayout.WEST);
 
         JButton btnNewButton = new JButton(actOpen);
+        btnNewButton.setFont(font);
         panel.add(btnNewButton, BorderLayout.EAST);
 
         JScrollPane scrollPane = new JScrollPane();
         contentPane.add(scrollPane, BorderLayout.CENTER);
 
         tblBook = new JTable(model);
-        tblBook.addKeyListener(evtSearch);
+        tblBook.setFont(font);
         scrollPane.setViewportView(tblBook);
 
         JPanel panel_2 = new JPanel();
@@ -297,20 +325,26 @@ public class PhoneBookFrame extends RetentiveFrame {
         JPanel panel_1 = new JPanel();
         panel_1.setBorder(new EmptyBorder(5, 0, 0, 0));
         panel_2.add(panel_1);
-        FlowLayout flowLayout = (FlowLayout) panel_1.getLayout();
-        flowLayout.setVgap(0);
-        flowLayout.setHgap(0);
-        flowLayout.setAlignment(FlowLayout.LEFT);
+        panel_1.setLayout(new GridLayout(2, 6, 5, 5));
 
         JButton btnEditRecord = new JButton(actEditRecord);
+        btnEditRecord.setText("Изменить");
+        btnEditRecord.setFont(font);
         panel_1.add(btnEditRecord);
         JButton btnDeleteRecord = new JButton(actDeleteRecord);
+        btnDeleteRecord.setFont(font);
         panel_1.add(btnDeleteRecord);
         JButton btnAddRecord = new JButton(actAddRecord);
+        btnAddRecord.setFont(font);
         panel_1.add(btnAddRecord);
         JButton btnSave = new JButton(actSave);
+        btnSave.setFont(font);
         panel_1.add(btnSave);
+        JButton btnSaveAs = new JButton(actSaveAs);
+        btnSaveAs.setFont(font);
+        panel_1.add(btnSaveAs);
         JButton btnNewBook = new JButton(actNewBook);
+        btnNewBook.setFont(font);
         panel_1.add(btnNewBook);
 
         JPanel panel_3 = new JPanel();
@@ -321,12 +355,16 @@ public class PhoneBookFrame extends RetentiveFrame {
         panel_2.add(panel_3, BorderLayout.NORTH);
 
         JLabel lblSearch = new JLabel("Поиск");
+        lblSearch.setFont(font);
         panel_3.add(lblSearch);
 
         edtSearch = new JTextField();
+        edtSearch.setFont(font.deriveFont(Font.ITALIC | Font.BOLD, 13));
+        edtSearch.setBackground(Color.WHITE);
+        edtSearch.setEditable(false);
         edtSearch.addCaretListener(new CaretListener() {
             public void caretUpdate(CaretEvent e) {
-                model.setFilter(edtSearch.getText());
+                model.setFilter(edtSearch.getText(), true);
             }
         });
         panel_3.add(edtSearch);
@@ -389,6 +427,7 @@ public class PhoneBookFrame extends RetentiveFrame {
             }
         });
         TableCellRenderer rendererFromHeader = tblBook.getTableHeader().getDefaultRenderer();
+        tblBook.getTableHeader().setFont(font);
         JLabel headerLabel = (JLabel) rendererFromHeader;
         headerLabel.setHorizontalAlignment(JLabel.CENTER);
     }

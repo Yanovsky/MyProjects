@@ -1,5 +1,7 @@
 package ru.alex.phonebook.visual;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -13,13 +15,16 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.Timer;
 import javax.swing.table.AbstractTableModel;
 
 import net.coobird.thumbnailator.Thumbnailator;
 
 import org.apache.commons.lang.StringUtils;
 
-import ru.alex.phonebook.visual.VCardUtils.IPredicate;
+import ru.alex.phonebook.classes.PhoneType;
+import ru.alex.phonebook.tools.VCardUtils;
+import ru.alex.phonebook.tools.VCardUtils.IPredicate;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.parameter.TelephoneType;
@@ -32,7 +37,8 @@ public class PhoneBookModel extends AbstractTableModel {
     private List<VCard> originalPhonebook = new ArrayList<VCard>();
     private List<VCard> phonebook = new ArrayList<VCard>();
     private File phoneBookFile;
-    private String filter = "";
+    private String filter = null;
+    private Timer filterTimer;
     private IPredicate<VCard> filterPredicate = new VCardUtils.IPredicate<VCard>() {
         @Override
         public boolean apply(VCard card) {
@@ -49,12 +55,24 @@ public class PhoneBookModel extends AbstractTableModel {
             return s1.compareTo(s2);
         }
     };
+    private ActionListener searchTask = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            phonebook = (List<VCard>) VCardUtils.filter(originalPhonebook, filterPredicate);
+            fireTableDataChanged();
+        }
+    };
+
+    public PhoneBookModel() {
+        filterTimer = new Timer(1000, searchTask);
+        filterTimer.setRepeats(false);
+    }
 
     public void setPhoneBookFile(File phoneBookFile) throws IOException {
         if (phoneBookFile != null && phoneBookFile.exists()) {
             originalPhonebook = Ezvcard.parse(phoneBookFile).all();
             Collections.sort(originalPhonebook, nameSorter);
-            setFilter(null);
+            setFilter(filter, false);
         }
         this.phoneBookFile = phoneBookFile;
     }
@@ -74,7 +92,7 @@ public class PhoneBookModel extends AbstractTableModel {
     public int getAddCard(VCard card) {
         originalPhonebook.add(card);
         Collections.sort(originalPhonebook, nameSorter);
-        setFilter(filter);
+        setFilter(filter, false);
         int result = phonebook.indexOf(card);
         fireTableDataChanged();
         return result;
@@ -180,12 +198,16 @@ public class PhoneBookModel extends AbstractTableModel {
         fireTableRowsDeleted(cardIndex, cardIndex);
     }
 
-    public void setFilter(final String filter) {
-        if (!StringUtils.equalsIgnoreCase(this.filter, filter)) {
+    public void setFilter(final String filter, boolean delayed) {
+        if (this.filter == null || filter == null || !StringUtils.equalsIgnoreCase(this.filter, filter)) {
             this.filter = filter;
-            phonebook = (List<VCard>) VCardUtils.filter(originalPhonebook, filterPredicate);
-            fireTableDataChanged();
+            if (delayed) {
+                filterTimer.start();
+            } else {
+                searchTask.actionPerformed(null);
+            }
         }
     }
+
 
 }
