@@ -43,6 +43,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.coobird.thumbnailator.Thumbnailator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -117,9 +118,10 @@ public class CardDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser fc = getImageFileChooser(".", false);
+            JFileChooser fc = getImageFileChooser(PhoneBookFrame.lastImageFolder, false);
             if (fc.showOpenDialog(CardDialog.this) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fc.getSelectedFile();
+                PhoneBookFrame.lastImageFolder = fc.getCurrentDirectory();
                 try {
                     BufferedImage image = ImageIO.read(selectedFile);
                     if (image.getWidth() > 720 && image.getHeight() > 720)
@@ -141,9 +143,10 @@ public class CardDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser fc = getImageFileChooser(".", true);
+            JFileChooser fc = getImageFileChooser(PhoneBookFrame.lastImageFolder, true);
             if (fc.showSaveDialog(CardDialog.this) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fc.getSelectedFile();
+                PhoneBookFrame.lastImageFolder = fc.getCurrentDirectory();
                 if (fc.getFileFilter() instanceof FileNameExtensionFilter) {
                     FileNameExtensionFilter filter = (FileNameExtensionFilter) fc.getFileFilter();
                     if (StringUtils.isEmpty(FilenameUtils.getExtension(selectedFile.getName()))) {
@@ -516,8 +519,11 @@ public class CardDialog extends JDialog {
         }
     }
 
-    protected JFileChooser getImageFileChooser(String currentFolder, boolean selectDefault) {
+    protected JFileChooser getImageFileChooser(File currentFolder, boolean selectDefault) {
         UIManager.put("FileChooser.readOnly", Boolean.TRUE);
+        if (currentFolder == null) {
+            currentFolder = FileUtils.getFile(".");
+        }
         JFileChooser fc = new JFileChooser(currentFolder);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);

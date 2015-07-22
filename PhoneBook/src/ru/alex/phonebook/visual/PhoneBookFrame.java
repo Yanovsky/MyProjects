@@ -44,6 +44,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -56,6 +57,8 @@ import ezvcard.property.StructuredName;
 public class PhoneBookFrame extends RetentiveFrame {
     private static final long serialVersionUID = 1L;
     private static final Font font = new Font("Verdana", Font.PLAIN, 12);
+    public static File lastImageFolder;
+
     private Rectangle cardDialogBounds = null;
     private JPanel contentPane;
     private JTextField edtPhoneBookFile;
@@ -231,6 +234,7 @@ public class PhoneBookFrame extends RetentiveFrame {
     @Override
     protected void loadParameters() {
         super.loadParameters();
+        lastImageFolder = FileUtils.getFile(properties.getProperty("lastImageFolder", "."));
         if (properties.containsKey("cardDialogBoundsW")) {
             cardDialogBounds = new Rectangle();
             cardDialogBounds.x = Integer.valueOf(properties.getProperty("cardDialogBoundsX", "100"));
@@ -251,6 +255,7 @@ public class PhoneBookFrame extends RetentiveFrame {
     @Override
     protected void saveParameters() {
         properties.setProperty("phoneBookFile", edtPhoneBookFile.getText());
+        properties.setProperty("lastImageFolder", lastImageFolder.getAbsolutePath());
         properties.setProperty("cardDialogBoundsX", Integer.toString(cardDialogBounds.x));
         properties.setProperty("cardDialogBoundsY", Integer.toString(cardDialogBounds.y));
         properties.setProperty("cardDialogBoundsW", Integer.toString(cardDialogBounds.width));
@@ -263,6 +268,7 @@ public class PhoneBookFrame extends RetentiveFrame {
         super(configFile);
 
         DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(new KeyEventPostProcessor() {
+            @Override
             public boolean postProcessKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_TYPED) {
                     String text = edtSearch.getText();
@@ -363,6 +369,7 @@ public class PhoneBookFrame extends RetentiveFrame {
         edtSearch.setBackground(Color.WHITE);
         edtSearch.setEditable(false);
         edtSearch.addCaretListener(new CaretListener() {
+            @Override
             public void caretUpdate(CaretEvent e) {
                 model.setFilter(edtSearch.getText(), true);
             }
@@ -372,6 +379,7 @@ public class PhoneBookFrame extends RetentiveFrame {
 
         JButton btnNewButton_1 = new JButton("");
         btnNewButton_1.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 edtSearch.setText("");
             }
