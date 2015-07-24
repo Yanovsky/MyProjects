@@ -20,6 +20,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -199,7 +200,7 @@ public class PhoneBookFrame extends RetentiveFrame {
     protected void saveBook(File phoneBookFile) {
         try {
             int i = tblBook.getSelectedRow();
-            Ezvcard.write(model.getPhoneBook()).version(VCardVersion.V3_0).go(phoneBookFile);
+            Ezvcard.write(model.getPhoneBook()).version(VCardVersion.V2_1).go(phoneBookFile);
             setPhoneBookFile(phoneBookFile);
             tblBook.getSelectionModel().setSelectionInterval(i, i);
             SwingUtilities.invokeLater(new Runnable() {
@@ -271,20 +272,20 @@ public class PhoneBookFrame extends RetentiveFrame {
             @Override
             public boolean postProcessKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_TYPED) {
-                    String text = edtSearch.getText();
-                    if (StringUtils.isAlphanumericSpace(String.valueOf(e.getKeyChar()))) {
-                        edtSearch.setText(text + e.getKeyChar());
-                    }
-                    if (e.getKeyChar() == '\b' && text.length() > 0) {
-                        edtSearch.setText(text.substring(0, text.length() - 1));
-                    }
-                    if (e.getKeyChar() == 27) {
-                        if (CardDialog.showing()) {
-                            CardDialog.close();
-                        } else {
-                            edtSearch.setText("");
+                    if (PhoneBookFrame.this.isActive()) {
+                        String text = edtSearch.getText();
+                        if (StringUtils.isAlphanumericSpace(String.valueOf(e.getKeyChar()))) {
+                            edtSearch.setText(text + e.getKeyChar());
+                        }
+                        if (e.getKeyChar() == '\b' && text.length() > 0) {
+                            edtSearch.setText(text.substring(0, text.length() - 1));
                         }
                     }
+                    if (e.getKeyChar() == 27) {
+                        edtSearch.setText("");
+                    }
+                } else if (CardDialog.showing() && e.getKeyChar() == 27) {
+                    CardDialog.close();
                 }
                 return false;
             }
@@ -371,7 +372,7 @@ public class PhoneBookFrame extends RetentiveFrame {
         edtSearch.addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
-                model.setFilter(edtSearch.getText(), true);
+                model.setFilter(Optional.ofNullable(edtSearch.getText()), true);
             }
         });
         panel_3.add(edtSearch);

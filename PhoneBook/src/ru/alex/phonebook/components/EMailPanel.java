@@ -21,7 +21,7 @@ import ru.alex.phonebook.classes.EMailType;
 import ezvcard.parameter.EmailType;
 import ezvcard.property.Email;
 
-public class EMailPanel extends JPanel {
+public class EmailPanel extends AbstractDataPanel<Email> {
     private static final long serialVersionUID = 1L;
     private JTextField edtEmail;
     private JComboBox<EMailType> edtType;
@@ -37,7 +37,7 @@ public class EMailPanel extends JPanel {
                     @Override
                     public void run() {
                         JPanel panel = (JPanel) getParent();
-                        panel.remove(EMailPanel.this);
+                        panel.remove(EmailPanel.this);
                         panel.updateUI();
                     }
                 });
@@ -45,7 +45,7 @@ public class EMailPanel extends JPanel {
         }
     };
 
-    public EMailPanel() {
+    public EmailPanel() {
         setLayout(new BorderLayout(0, 0));
 
         edtEmail = new JTextField();
@@ -74,7 +74,8 @@ public class EMailPanel extends JPanel {
         panel.add(edtMain, BorderLayout.EAST);
     }
 
-    public void setEmail(Email email) {
+    @Override
+    public void setData(Email email) {
         edtEmail.setText(email.getValue());
         for (EmailType type : email.getTypes()) {
             if (type == EmailType.PREF) {
@@ -85,7 +86,8 @@ public class EMailPanel extends JPanel {
         }
     }
 
-    public Email getEmail() {
+    @Override
+    public Email getData() {
         Email result = new Email(edtEmail.getText());
         result.getTypes().clear();
         if (edtMain.isSelected()) {
@@ -97,6 +99,7 @@ public class EMailPanel extends JPanel {
         return result;
     }
 
+    @Override
     public AbstractButton getCheckBox() {
         return edtMain;
     }

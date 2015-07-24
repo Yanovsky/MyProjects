@@ -2,7 +2,7 @@ package ru.alex.phonebook.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -18,6 +18,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -48,11 +52,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
 import ru.alex.phonebook.classes.EmptyImage;
+import ru.alex.phonebook.components.AbstractDataPanel;
 import ru.alex.phonebook.components.AddressPanel;
-import ru.alex.phonebook.components.EMailPanel;
+import ru.alex.phonebook.components.EmailPanel;
 import ru.alex.phonebook.components.ListLayout;
 import ru.alex.phonebook.components.TelephonePanel;
-import ru.alex.phonebook.tools.VCardUtils;
 import ezvcard.VCard;
 import ezvcard.parameter.AddressType;
 import ezvcard.parameter.EmailType;
@@ -60,9 +64,11 @@ import ezvcard.parameter.ImageType;
 import ezvcard.parameter.TelephoneType;
 import ezvcard.property.Address;
 import ezvcard.property.Email;
+import ezvcard.property.HasAltId;
 import ezvcard.property.Photo;
 import ezvcard.property.StructuredName;
 import ezvcard.property.Telephone;
+import ezvcard.property.VCardProperty;
 
 public class CardDialog extends JDialog {
     private static final long serialVersionUID = 1L;
@@ -150,7 +156,7 @@ public class CardDialog extends JDialog {
                 if (fc.getFileFilter() instanceof FileNameExtensionFilter) {
                     FileNameExtensionFilter filter = (FileNameExtensionFilter) fc.getFileFilter();
                     if (StringUtils.isEmpty(FilenameUtils.getExtension(selectedFile.getName()))) {
-                        selectedFile = new File(fc.getSelectedFile().getPath() + "." + filter.getExtensions()[0]);
+                        selectedFile = new File(fc.getSelectedFile().getPath() + "." + Stream.of(filter.getExtensions()).findFirst().get());
                     }
                 }
                 try {
@@ -181,13 +187,13 @@ public class CardDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            TelephonePanel p = new TelephonePanel();
             Telephone telephone = new Telephone("");
             telephone.addType(TelephoneType.CELL);
             if (pnlTelephones.getComponentCount() == 0) {
                 telephone.addType(TelephoneType.PREF);
             }
-            p.setTelephone(telephone);
+            TelephonePanel p = new TelephonePanel();
+            p.setData(telephone);
             pnlTelephones.add(p);
             pnlTelephones.updateUI();
         }
@@ -198,13 +204,13 @@ public class CardDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            EMailPanel p = new EMailPanel();
             Email email = new Email("");
             email.addType(EmailType.HOME);
             if (pnlEmail.getComponentCount() == 0) {
                 email.addType(EmailType.PREF);
             }
-            p.setEmail(email);
+            EmailPanel p = new EmailPanel();
+            p.setData(email);
             pnlEmail.add(p);
             pnlEmail.updateUI();
         }
@@ -215,13 +221,13 @@ public class CardDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            AddressPanel p = new AddressPanel();
             Address address = new Address();
             address.addType(AddressType.POSTAL);
             if (pnlAddresses.getComponentCount() == 0) {
                 address.addType(AddressType.PREF);
             }
-            p.setAddress(address);
+            AddressPanel p = new AddressPanel();
+            p.setData(address);
             pnlAddresses.add(p);
             pnlAddresses.updateUI();
         }
@@ -233,9 +239,8 @@ public class CardDialog extends JDialog {
         setIconImage(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/ru/alex/phonebook/img/main.png")));
         setTitle("Карточка абонента");
 
-        loadImage();
+        initImage();
 
-        StructuredName nameData = card.getStructuredName();
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent event) {
@@ -262,7 +267,7 @@ public class CardDialog extends JDialog {
             contentPanel.add(label, gbc_label);
         }
 
-        edtPrefix = new JTextField(nameData.getPrefixes() != null && nameData.getPrefixes().size() > 0 ? nameData.getPrefixes().get(0) : "");
+        edtPrefix = new JTextField();
         GridBagConstraints gbc_edtPrefix = new GridBagConstraints();
         gbc_edtPrefix.insets = new Insets(0, 0, 5, 5);
         gbc_edtPrefix.fill = GridBagConstraints.HORIZONTAL;
@@ -322,7 +327,7 @@ public class CardDialog extends JDialog {
             gbc_label.gridy = 1;
             contentPanel.add(label, gbc_label);
         }
-        edtSurname = new JTextField(nameData.getFamily());
+        edtSurname = new JTextField();
         GridBagConstraints gbc_edtSurname = new GridBagConstraints();
         gbc_edtSurname.insets = new Insets(0, 0, 5, 5);
         gbc_edtSurname.fill = GridBagConstraints.HORIZONTAL;
@@ -339,7 +344,7 @@ public class CardDialog extends JDialog {
             gbc_lblNewLabel.gridy = 2;
             contentPanel.add(label, gbc_lblNewLabel);
         }
-        edtName = new JTextField(nameData.getGiven());
+        edtName = new JTextField();
         GridBagConstraints gbc_edtName = new GridBagConstraints();
         gbc_edtName.insets = new Insets(0, 0, 5, 5);
         gbc_edtName.fill = GridBagConstraints.HORIZONTAL;
@@ -356,7 +361,7 @@ public class CardDialog extends JDialog {
             gbc_lblNewLabel_2.gridy = 3;
             contentPanel.add(label, gbc_lblNewLabel_2);
         }
-        edtParentName = new JTextField(nameData.getAdditional() != null && nameData.getAdditional().size() > 0 ? nameData.getAdditional().get(0) : "");
+        edtParentName = new JTextField();
         GridBagConstraints gbc_edtParentName = new GridBagConstraints();
         gbc_edtParentName.insets = new Insets(0, 0, 5, 5);
         gbc_edtParentName.fill = GridBagConstraints.HORIZONTAL;
@@ -373,7 +378,7 @@ public class CardDialog extends JDialog {
             gbc_lblNewLabel_3.gridy = 4;
             contentPanel.add(label, gbc_lblNewLabel_3);
         }
-        edtSuffix = new JTextField(nameData.getSuffixes() != null && nameData.getSuffixes().size() > 0 ? nameData.getSuffixes().get(0) : "");
+        edtSuffix = new JTextField();
         GridBagConstraints gbc_edtSuffix = new GridBagConstraints();
         gbc_edtSuffix.anchor = GridBagConstraints.NORTH;
         gbc_edtSuffix.insets = new Insets(0, 0, 5, 5);
@@ -478,45 +483,63 @@ public class CardDialog extends JDialog {
         JButton cancelButton = new JButton(actCancel);
         buttonPane.add(cancelButton);
 
-        loadTelephones();
-        loadEmails();
-        loadAddresses();
+        initName();
+        initField(card.getEmails().stream(), pnlEmail);
+        initField(card.getTelephoneNumbers().stream(), pnlTelephones);
+        initField(card.getAddresses().stream(), pnlAddresses);
+
+        initGeo();
     }
 
-    private void loadAddresses() {
-        if (card != null && card.getAddresses() != null && card.getAddresses().size() > 0) {
-            ButtonGroup group = new ButtonGroup();
-            for (Address address : card.getAddresses()) {
-                AddressPanel addressesPanel = new AddressPanel();
-                addressesPanel.setAddress(address);
-                pnlAddresses.add(addressesPanel);
-                group.add(addressesPanel.getCheckBox());
-            }
-        }
+    private void initName() {
+        Optional.ofNullable(card.getStructuredName()).ifPresent(nameData -> {
+            edtName.setText(nameData.getGiven());
+            edtSurname.setText(nameData.getFamily());
+            initNameFiled(edtPrefix, nameData.getPrefixes());
+            initNameFiled(edtSuffix, nameData.getSuffixes());
+            initNameFiled(edtParentName, nameData.getAdditional());
+        });
     }
 
-    private void loadTelephones() {
-        if (card != null && card.getTelephoneNumbers() != null && card.getTelephoneNumbers().size() > 0) {
-            ButtonGroup group = new ButtonGroup();
-            for (Telephone number : VCardUtils.sortTelephones(card.getTelephoneNumbers())) {
-                TelephonePanel telephonePanel = new TelephonePanel();
-                telephonePanel.setTelephone(number);
-                pnlTelephones.add(telephonePanel);
-                group.add(telephonePanel.getCheckBox());
-            }
-        }
+    private void initNameFiled(JTextField editor, List<String> values) {
+        Optional.ofNullable(values).ifPresent(items -> {
+            items.stream().findFirst().ifPresent(item -> {
+                editor.setText(item);
+            });
+        });
     }
 
-    private void loadEmails() {
-        if (card != null && card.getEmails() != null && card.getEmails().size() > 0) {
+    @SuppressWarnings("unchecked")
+    private <T extends VCardProperty> void initField(Stream<T> stream, Container parent) {
+        Optional.ofNullable(stream).ifPresent(values -> {
             ButtonGroup group = new ButtonGroup();
-            for (Email email : card.getEmails()) {
-                EMailPanel emailPanel = new EMailPanel();
-                emailPanel.setEmail(email);
-                pnlEmail.add(emailPanel);
-                group.add(emailPanel.getCheckBox());
-            }
-        }
+            stream.forEach(value -> {
+                try {
+                    String s = AbstractDataPanel.class.getPackage().getName() + "." + value.getClass().getSimpleName() + "Panel";
+                    AbstractDataPanel<T> panel = (AbstractDataPanel<T>) Class.forName(s).newInstance();
+                    panel.setData(value);
+                    parent.add(panel);
+                    group.add(panel.getCheckBox());
+                } catch (Exception e) {
+                    e.printStackTrace();
+
+                }
+            });
+        });
+    }
+
+    private void initGeo() {
+        System.out.println("SortString: " + card.getVersion());
+        Optional.ofNullable(card.getGeos()).ifPresent(geos -> {
+            //            ButtonGroup group = new ButtonGroup();
+            geos.stream().forEach(geo -> {
+                System.out.println(geo.getType() + " " + geo.getLatitude() + " " + geo.getLongitude());
+                //                AddressPanel addressesPanel = new AddressPanel();
+                //                addressesPanel.setAddress(address);
+                //                pnlAddresses.add(addressesPanel);
+                //                group.add(addressesPanel.getCheckBox());
+            });
+        });
     }
 
     protected JFileChooser getImageFileChooser(File currentFolder, boolean selectDefault) {
@@ -538,25 +561,22 @@ public class CardDialog extends JDialog {
         return fc;
     }
 
-    private void loadImage() {
+    private void initImage() {
         originalImage = null;
-        if (card != null && card.getPhotos() != null && card.getPhotos().size() > 0) {
-            InputStream input = new ByteArrayInputStream(card.getPhotos().get(0).getData());
-            try {
-                originalImage = ImageIO.read(input);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        Optional.ofNullable(card.getPhotos()).ifPresent(photos -> {
+            photos.stream().findFirst().ifPresent(photo -> {
+                InputStream input = new ByteArrayInputStream(photo.getData());
+                try {
+                    originalImage = ImageIO.read(input);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
     }
 
     private String getPhotoDescription() {
-        if (card != null && card.getPhotos() != null && card.getPhotos().size() > 0) {
-            if (originalImage != null) {
-                return "Фото: " + originalImage.getWidth() + " x " + originalImage.getHeight();
-            }
-        }
-        return "Фото отсутствует";
+        return originalImage != null ? "Фото: " + originalImage.getWidth() + " x " + originalImage.getHeight() : "Фото отсутствует";
     }
 
     private Icon getPhoto() {
@@ -594,63 +614,41 @@ public class CardDialog extends JDialog {
         if (!StringUtils.isEmpty(edtParentName.getText()))
             nameData.addAdditional(edtParentName.getText());
 
-        syncImage();
-
-        syncTelephones();
-        syncEMails();
-        syncAddresses();
+        syncField(Photo.class, null);
+        syncField(Telephone.class, pnlTelephones);
+        syncField(Email.class, pnlEmail);
+        syncField(Address.class, pnlAddresses);
     }
 
-    private void syncAddresses() {
-        if (card.getAddresses().size() > 0) {
-            card.setProperty(Address.class, null);
-        }
-        for (Component comp : pnlAddresses.getComponents()) {
-            AddressPanel tp = (AddressPanel) comp;
-            card.addAddress(tp.getAddress());
-        }
-    }
-
-    private void syncEMails() {
-        if (card.getEmails().size() > 0) {
-            card.setProperty(Email.class, null);
-        }
-        for (Component comp : pnlEmail.getComponents()) {
-            EMailPanel tp = (EMailPanel) comp;
-            card.addEmail(tp.getEmail());
-        }
-    }
-
-    private void syncTelephones() {
-        if (card.getTelephoneNumbers().size() > 0) {
-            card.setProperty(Telephone.class, null);
-        }
-        for (Component comp : pnlTelephones.getComponents()) {
-            TelephonePanel tp = (TelephonePanel) comp;
-            card.addTelephoneNumber(tp.getTelephone());
-        }
-    }
-
-    private void syncImage() throws Exception {
-        ByteArrayOutputStream stream = null;
-        try {
-            if (card.getPhotos().size() > 0) {
+    @SuppressWarnings("unchecked")
+    private <T extends VCardProperty & HasAltId> void syncField(Class<T> clazz, Container container) throws Exception {
+        card.setProperty(clazz, null);
+        if (clazz.isAssignableFrom(Photo.class)) {
+            ByteArrayOutputStream stream = null;
+            try {
                 card.setProperty(Photo.class, null);
+                if (originalImage != null) {
+                    stream = new ByteArrayOutputStream();
+                    ImageIO.write(originalImage, "png", stream);
+                    stream.flush();
+                    byte[] imageBytes = stream.toByteArray();
+                    Photo photo = new Photo(imageBytes, ImageType.PNG);
+                    card.addPhoto(photo);
+                }
+            } finally {
+                if (stream != null)
+                    stream.close();
             }
-            if (originalImage != null) {
-                stream = new ByteArrayOutputStream();
-                ImageIO.write(originalImage, "png", stream);
-                stream.flush();
-                byte[] imageBytes = stream.toByteArray();
-                Photo photo = new Photo(imageBytes, ImageType.PNG);
-                card.addPhoto(photo);
-            }
-        } finally {
-            if (stream != null)
-                stream.close();
+        } else {     
+            card.addPropertyAlt(clazz,
+            Stream.of(container.getComponents())
+                .filter(item -> item instanceof AbstractDataPanel)
+                .map(item -> ((AbstractDataPanel<? extends T>) item).getData())
+                .collect(Collectors.toList())
+            );                
         }
     }
-
+    
     public VCard getCard() {
         return card;
     }

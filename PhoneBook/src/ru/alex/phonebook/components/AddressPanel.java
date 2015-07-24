@@ -26,7 +26,7 @@ import javax.swing.JTextField;
 import ezvcard.parameter.AddressType;
 import ezvcard.property.Address;
 
-public class AddressPanel extends JPanel {
+public class AddressPanel extends AbstractDataPanel<Address> {
     private static final long serialVersionUID = 1L;
     private JComboBox<ru.alex.phonebook.classes.AddressType> edtType;
     private JCheckBox edtMain;
@@ -36,6 +36,7 @@ public class AddressPanel extends JPanel {
     private JTextField edtRegion;
     private JTextField edtStreetAddress;
     private JTextField edtExtendedAddress;
+    private JPanel pnlData;
 
     private Action actDelete = new AbstractAction("удалить") {
         private static final long serialVersionUID = 1L;
@@ -54,7 +55,6 @@ public class AddressPanel extends JPanel {
             }
         }
     };
-    private JPanel pnlData;
 
     public AddressPanel() {
         setPreferredSize(new Dimension(430, 135));
@@ -202,14 +202,15 @@ public class AddressPanel extends JPanel {
         panel_2.add(btnNewButton);
     }
 
-    public void setAddress(Address address) {
-        edtCountry.setText(address.getCountry());
-        edtRegion.setText(address.getRegion());
-        edtPostalCode.setText(address.getPostalCode());
-        edtLocality.setText(address.getLocality());
-        edtStreetAddress.setText(address.getStreetAddress());
-        edtExtendedAddress.setText(address.getExtendedAddress());
-        for (AddressType type : address.getTypes()) {
+    @Override
+    public void setData(Address data) {
+        edtCountry.setText(data.getCountry());
+        edtRegion.setText(data.getRegion());
+        edtPostalCode.setText(data.getPostalCode());
+        edtLocality.setText(data.getLocality());
+        edtStreetAddress.setText(data.getStreetAddress());
+        edtExtendedAddress.setText(data.getExtendedAddress());
+        for (AddressType type : data.getTypes()) {
             if (type == AddressType.PREF) {
                 edtMain.setSelected(true);
             } else {
@@ -218,7 +219,8 @@ public class AddressPanel extends JPanel {
         }
     }
 
-    public Address getAddress() {
+    @Override
+    public Address getData() {
         Address result = new Address();
         result.setCountry(edtCountry.getText());
         result.setRegion(edtRegion.getText());
@@ -236,6 +238,7 @@ public class AddressPanel extends JPanel {
         return result;
     }
 
+    @Override
     public AbstractButton getCheckBox() {
         return edtMain;
     }

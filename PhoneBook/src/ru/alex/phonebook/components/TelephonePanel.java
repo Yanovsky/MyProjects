@@ -21,7 +21,7 @@ import ru.alex.phonebook.classes.PhoneType;
 import ezvcard.parameter.TelephoneType;
 import ezvcard.property.Telephone;
 
-public class TelephonePanel extends JPanel {
+public class TelephonePanel extends AbstractDataPanel<Telephone> {
     private static final long serialVersionUID = 1L;
     private JTextField edtPhoneNumber;
     private JComboBox<PhoneType> edtType;
@@ -74,9 +74,10 @@ public class TelephonePanel extends JPanel {
         panel.add(edtMain, BorderLayout.EAST);
     }
 
-    public void setTelephone(Telephone number) {
-        edtPhoneNumber.setText(number.getText());
-        for (TelephoneType type : number.getTypes()) {
+    @Override
+    public void setData(Telephone data) {
+        edtPhoneNumber.setText(data.getText());
+        for (TelephoneType type : data.getTypes()) {
             if (type == TelephoneType.PREF) {
                 edtMain.setSelected(true);
             } else {
@@ -85,7 +86,8 @@ public class TelephonePanel extends JPanel {
         }
     }
 
-    public Telephone getTelephone() {
+    @Override
+    public Telephone getData() {
         Telephone result = new Telephone(edtPhoneNumber.getText());
         result.getTypes().clear();
         if (edtMain.isSelected()) {
@@ -97,6 +99,7 @@ public class TelephonePanel extends JPanel {
         return result;
     }
 
+    @Override
     public AbstractButton getCheckBox() {
         return edtMain;
     }
