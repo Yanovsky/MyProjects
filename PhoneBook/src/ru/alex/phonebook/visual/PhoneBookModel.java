@@ -93,7 +93,7 @@ public class PhoneBookModel extends AbstractTableModel {
         return phonebook.get(rowIndex);
     }
 
-    public int getAddCard(VCard card) {
+    public int addCard(VCard card) {
         originalPhonebook.add(card);
         Collections.sort(originalPhonebook, nameSorter);
         setFilter(Optional.ofNullable(filter), false);

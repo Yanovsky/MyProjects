@@ -124,8 +124,9 @@ public class CardDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser fc = getImageFileChooser(PhoneBookFrame.lastImageFolder, false);
-            if (fc.showOpenDialog(CardDialog.this) == JFileChooser.APPROVE_OPTION) {
+            JFileChooser fc = getImageFileChooser(PhoneBookFrame.lastImageFolder, JFileChooser.OPEN_DIALOG);
+            fc.setDialogType(JFileChooser.OPEN_DIALOG);
+            if (fc.showDialog(CardDialog.this, null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fc.getSelectedFile();
                 PhoneBookFrame.lastImageFolder = fc.getCurrentDirectory();
                 try {
@@ -149,14 +150,15 @@ public class CardDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser fc = getImageFileChooser(PhoneBookFrame.lastImageFolder, true);
-            if (fc.showSaveDialog(CardDialog.this) == JFileChooser.APPROVE_OPTION) {
+            JFileChooser fc = getImageFileChooser(PhoneBookFrame.lastImageFolder, JFileChooser.SAVE_DIALOG);
+            if (fc.showDialog(CardDialog.this, null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fc.getSelectedFile();
                 PhoneBookFrame.lastImageFolder = fc.getCurrentDirectory();
-                if (fc.getFileFilter() instanceof FileNameExtensionFilter) {
-                    FileNameExtensionFilter filter = (FileNameExtensionFilter) fc.getFileFilter();
+                FileFilter choosedFilter = fc.getFileFilter();
+                if (choosedFilter instanceof FileNameExtensionFilter) {
+                    FileNameExtensionFilter filter = (FileNameExtensionFilter) choosedFilter;
                     if (StringUtils.isEmpty(FilenameUtils.getExtension(selectedFile.getName()))) {
-                        selectedFile = new File(fc.getSelectedFile().getPath() + "." + Stream.of(filter.getExtensions()).findFirst().get());
+                        selectedFile = new File(fc.getSelectedFile().getPath() + "." + Stream.of(filter.getExtensions()).findFirst().orElse("png"));
                     }
                 }
                 try {
@@ -542,23 +544,26 @@ public class CardDialog extends JDialog {
         });
     }
 
-    protected JFileChooser getImageFileChooser(File currentFolder, boolean selectDefault) {
+    protected JFileChooser getImageFileChooser(File currentFolder, int dialogType) {
         UIManager.put("FileChooser.readOnly", Boolean.TRUE);
         if (currentFolder == null) {
             currentFolder = FileUtils.getFile(".");
         }
         JFileChooser fc = new JFileChooser(currentFolder);
+        fc.setDialogType(dialogType);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);
-        FileFilter defaultFilter = new FileNameExtensionFilter("Файлы изображений (*.png)", "png");
-        fc.addChoosableFileFilter(defaultFilter);
-        fc.addChoosableFileFilter(new FileNameExtensionFilter("Файлы изображений (*.jpg)", "jpg"));
-        fc.addChoosableFileFilter(new FileNameExtensionFilter("Файлы изображений (*.gif)", "gif"));
-        fc.addChoosableFileFilter(new FileNameExtensionFilter("Файлы изображений (*.bmp)", "bmp"));
-        if (selectDefault) {
-            fc.setFileFilter(defaultFilter);
-        }
+        setImageFilters(fc, "png", "jpg", "gif", "bmp");
         return fc;
+    }
+
+    private void setImageFilters(JFileChooser fc, String... extension) {
+        Stream.of(extension).forEach(ext -> {
+            fc.addChoosableFileFilter(new FileNameExtensionFilter("Файлы изображений (*." + ext + ")", ext));
+        });
+        if (fc.getDialogType() == JFileChooser.SAVE_DIALOG) {
+            fc.removeChoosableFileFilter(Stream.of(fc.getChoosableFileFilters()).findFirst().get());
+        }
     }
 
     private void initImage() {

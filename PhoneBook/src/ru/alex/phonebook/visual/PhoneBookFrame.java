@@ -92,6 +92,7 @@ public class PhoneBookFrame extends RetentiveFrame {
             CardDialog cardDialog = new CardDialog(card);
             applyDialogBounds(cardDialog, getCardDialogBounds());
             cardDialog.showDialog();
+            model.fireTableRowsUpdated(tblBook.getSelectedRow(), tblBook.getSelectedRow());
             setCardDialogBounds(cardDialog.getBounds());
         }
     };
@@ -105,7 +106,7 @@ public class PhoneBookFrame extends RetentiveFrame {
             CardDialog cardDialog = new CardDialog(card);
             applyDialogBounds(cardDialog, getCardDialogBounds());
             if (cardDialog.showDialog() == CardDialog.APPROVE_OPTION) {
-                final int inserted = model.getAddCard(card);
+                final int inserted = model.addCard(card);
                 tblBook.getSelectionModel().setSelectionInterval(inserted, inserted);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -428,10 +429,8 @@ public class PhoneBookFrame extends RetentiveFrame {
                 if (value != null) {
                     lbl.setText("");
                     lbl.setIcon((Icon) value);
-                    if (lbl.getIcon().getIconHeight() > 0) {
-                        table.setRowHeight(row, Math.max(table.getRowHeight(row), lbl.getIcon().getIconHeight()));
-                    }
                 }
+                table.setRowHeight(row, Math.max(table.getRowHeight(row), lbl.getIcon().getIconHeight()));
                 return lbl;
             }
         });
