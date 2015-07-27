@@ -1,17 +1,24 @@
 package ru.alex.phonebook;
 
 import java.awt.EventQueue;
+import java.util.stream.Stream;
 
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
+import org.apache.commons.lang.StringUtils;
+
+import ru.alex.phonebook.fx.PhoneBookLauncher;
 import ru.alex.phonebook.visual.PhoneBookFrame;
 
 public class PhoneBook {
 
     public static void main(final String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
+        if (Stream.of(args).anyMatch(arg -> StringUtils.equalsIgnoreCase(arg, "-fx"))) {
+            System.out.println("FX");
+            PhoneBookLauncher.start(args);
+        } else {
+            EventQueue.invokeLater(() -> {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception e) {
@@ -19,8 +26,8 @@ public class PhoneBook {
                 }
                 PhoneBookFrame frame = new PhoneBookFrame("PhoneBook.conf");
                 frame.setVisible(true);
-            }
-        });
+            });
+        }
     }
 
 }

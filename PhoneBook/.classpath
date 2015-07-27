@@ -9,5 +9,7 @@
 	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/thumbnailator-0.4.8.jar" sourcepath="lib/thumbnailator-0.4.8-sources.jar"/>
+	<classpathentry kind="lib" path="lib/cloning-1.9.2.jar" sourcepath="lib/cloning-1.9.2-sources.jar"/>
+	<classpathentry kind="lib" path="lib/objenesis-2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

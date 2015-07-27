@@ -49,23 +49,24 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
-import ru.alex.phonebook.components.RetentiveFrame;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.VCardVersion;
 import ezvcard.property.StructuredName;
+import ru.alex.phonebook.components.RetentiveFrame;
 
 public class PhoneBookFrame extends RetentiveFrame {
     private static final long serialVersionUID = 1L;
     private static final Font font = new Font("Verdana", Font.PLAIN, 12);
     public static File lastImageFolder;
+    public static PhoneBookModel model = new PhoneBookModel();
 
     private Rectangle cardDialogBounds = null;
     private JPanel contentPane;
     private JTextField edtPhoneBookFile;
     private JTable tblBook;
     private JTextField edtSearch;
-    private PhoneBookModel model = new PhoneBookModel();
+
     private Action actOpen = new AbstractAction("Открыть") {
         private static final long serialVersionUID = 1L;
 
@@ -91,8 +92,9 @@ public class PhoneBookFrame extends RetentiveFrame {
             VCard card = model.getCardAt(tblBook.getSelectedRow());
             CardDialog cardDialog = new CardDialog(card);
             applyDialogBounds(cardDialog, getCardDialogBounds());
-            cardDialog.showDialog();
-            model.fireTableRowsUpdated(tblBook.getSelectedRow(), tblBook.getSelectedRow());
+            if (cardDialog.showDialog() == CardDialog.APPROVE_OPTION) {
+                model.fireTableRowsUpdated(tblBook.getSelectedRow(), tblBook.getSelectedRow());
+            }
             setCardDialogBounds(cardDialog.getBounds());
         }
     };

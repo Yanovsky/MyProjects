@@ -10,8 +10,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -21,17 +24,19 @@ import javax.swing.ImageIcon;
 import javax.swing.Timer;
 import javax.swing.table.AbstractTableModel;
 
-import net.coobird.thumbnailator.Thumbnailator;
-
 import org.apache.commons.lang.StringUtils;
 
-import ru.alex.phonebook.classes.PhoneType;
-import ru.alex.phonebook.tools.VCardUtils;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.parameter.TelephoneType;
 import ezvcard.property.StructuredName;
 import ezvcard.property.Telephone;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
+import net.coobird.thumbnailator.Thumbnailator;
+import ru.alex.phonebook.classes.PhoneType;
+import ru.alex.phonebook.tools.VCardUtils;
 
 public class PhoneBookModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
@@ -41,6 +46,8 @@ public class PhoneBookModel extends AbstractTableModel {
     private File phoneBookFile;
     private String filter = "";
     private Timer filterTimer;
+    private Map<VCard, Image> fxImages = new HashMap<VCard, Image>();
+    private Map<VCard, Icon> thumbnails = new HashMap<VCard, Icon>();
 
     private Predicate<? super VCard> filterPredicate = new Predicate<VCard>() {
         @Override
@@ -117,42 +124,46 @@ public class PhoneBookModel extends AbstractTableModel {
         return columnNames[column];
     }
 
-    @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        if (rowIndex > -1 && rowIndex < phonebook.size()) {
-            VCard card = phonebook.get(rowIndex);
-            if (card != null) {
-                switch (columnIndex) {
-                    case 0:
-                        return getAbonentName(card);
-                    case 1:
-                        return getPhoneNumbers(card);
-                    case 2:
-                        return getPhoto(card);
-                    default:
-                        return null;
-                }
+    public Object getValueAt(VCard card, int columnIndex) {
+        if (card != null) {
+            switch (columnIndex) {
+                case 0:
+                    return getAbonentName(card);
+                case 1:
+                    return getPhoneNumbers(card);
+                case 2:
+                    return getPhoto(card);
+                default:
+                    return null;
             }
         }
         return null;
     }
 
-    private String getAbonentName(VCard card) {
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        if (rowIndex > -1 && rowIndex < phonebook.size()) {
+            VCard card = phonebook.get(rowIndex);
+            return getValueAt(card, columnIndex);
+        }
+        return null;
+    }
+
+    public String getAbonentName(VCard card) {
         StructuredName sName = card.getStructuredName();
         return (StringUtils.defaultString(sName.getFamily(), "") + " " + StringUtils.defaultString(sName.getGiven(), "")).trim();
     }
 
+    public String getFxPhoneNumbers(VCard card) {
+        return new StringBuilder().append(card.getTelephoneNumbers().stream().sorted(VCardUtils.numberSorter).map((number) -> this.mapToNumber(number, false)).collect(Collectors.joining(System.lineSeparator()))).toString();
+    }
+
     private String getPhoneNumbers(VCard card) {
         boolean moreThenOne = card.getTelephoneNumbers().size() > 1;
-        return new StringBuilder("<HTML>").append(card.getTelephoneNumbers()
-            .stream()
-            .sorted(VCardUtils.numberSorter)
-            .map((number) -> this.mapToHTMLNumber(number, moreThenOne))
-            .collect(Collectors.joining("<br>")))
-        .append("</HTML>").toString();
+        return new StringBuilder("<HTML>").append(card.getTelephoneNumbers().stream().sorted(VCardUtils.numberSorter).map((number) -> this.mapToNumber(number, moreThenOne)).collect(Collectors.joining("<br>"))).append("</HTML>").toString();
     }
-    
-    private String mapToHTMLNumber(Telephone number, boolean moreThenOne) {
+
+    private String mapToNumber(Telephone number, boolean moreThenOne) {
         StringBuilder sb = new StringBuilder();
         boolean main = number.getTypes().contains(TelephoneType.PREF) && moreThenOne;
         String typeS = number.getTypes().stream().filter(t -> t != TelephoneType.PREF).map(this::translateTelephoneType).findFirst().orElseGet(() -> "");
@@ -173,8 +184,20 @@ public class PhoneBookModel extends AbstractTableModel {
         }
     }
 
+    @Override
+    public void fireTableRowsUpdated(int firstRow, int lastRow) {
+        for (int i = firstRow; i <= lastRow; i++) {
+            thumbnails.remove(getCardAt(i));
+            fxImages.remove(getCardAt(i));
+        }
+        super.fireTableRowsUpdated(firstRow, lastRow);
+    }
+
     private Icon getPhoto(VCard card) {
-        ImageIcon icon = new ImageIcon();
+        AtomicReference<Icon> result = new AtomicReference<Icon>(thumbnails.get(card));
+        if (result.get() != null) {
+            return result.get();
+        }
         Optional.ofNullable(card.getPhotos()).ifPresent(photos -> {
             photos.stream().findFirst().ifPresent(photo -> {
                 Optional.ofNullable(photo.getData()).ifPresent(bytes -> {
@@ -182,7 +205,10 @@ public class PhoneBookModel extends AbstractTableModel {
                         InputStream input = new ByteArrayInputStream(bytes);
                         BufferedImage image = ImageIO.read(input);
                         Optional.ofNullable(image).ifPresent(img -> {
+                            ImageIcon icon = new ImageIcon();
                             icon.setImage(Thumbnailator.createThumbnail(img, 100, 100));
+                            result.set(icon);
+                            thumbnails.put(card, icon);
                         });
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -190,7 +216,33 @@ public class PhoneBookModel extends AbstractTableModel {
                 });
             });
         });
-        return icon;
+
+        return result.get() == null ? new ImageIcon() : result.get();
+    }
+
+    public Image getFxPhoto(VCard card) {
+        AtomicReference<Image> result = new AtomicReference<Image>(fxImages.get(card));
+        if (result.get() != null) {
+            return result.get();
+        }
+        Optional.ofNullable(card.getPhotos()).ifPresent(photos -> {
+            photos.stream().findFirst().ifPresent(photo -> {
+                Optional.ofNullable(photo.getData()).ifPresent(bytes -> {
+                    try {
+                        InputStream input = new ByteArrayInputStream(bytes);
+                        BufferedImage image = ImageIO.read(input);
+                        Optional.ofNullable(image).ifPresent(img -> {
+                            WritableImage fxImage = SwingFXUtils.toFXImage(Thumbnailator.createThumbnail(img, 100, 100), null);
+                            fxImages.put(card, fxImage);
+                            result.set(fxImage);
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            });
+        });
+        return result.get();
     }
 
     public void removeCard(int cardIndex) {
@@ -208,5 +260,6 @@ public class PhoneBookModel extends AbstractTableModel {
             }
         });
     }
+
 
 }

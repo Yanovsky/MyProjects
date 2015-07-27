@@ -45,18 +45,12 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import net.coobird.thumbnailator.Thumbnailator;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
-import ru.alex.phonebook.classes.EmptyImage;
-import ru.alex.phonebook.components.AbstractDataPanel;
-import ru.alex.phonebook.components.AddressPanel;
-import ru.alex.phonebook.components.EmailPanel;
-import ru.alex.phonebook.components.ListLayout;
-import ru.alex.phonebook.components.TelephonePanel;
+import com.rits.cloning.Cloner;
+
 import ezvcard.VCard;
 import ezvcard.parameter.AddressType;
 import ezvcard.parameter.EmailType;
@@ -69,6 +63,13 @@ import ezvcard.property.Photo;
 import ezvcard.property.StructuredName;
 import ezvcard.property.Telephone;
 import ezvcard.property.VCardProperty;
+import net.coobird.thumbnailator.Thumbnailator;
+import ru.alex.phonebook.classes.EmptyImage;
+import ru.alex.phonebook.components.AbstractDataPanel;
+import ru.alex.phonebook.components.AddressPanel;
+import ru.alex.phonebook.components.EmailPanel;
+import ru.alex.phonebook.components.ListLayout;
+import ru.alex.phonebook.components.TelephonePanel;
 
 public class CardDialog extends JDialog {
     private static final long serialVersionUID = 1L;
@@ -78,7 +79,7 @@ public class CardDialog extends JDialog {
     private static boolean showing;
     private static CardDialog dialog;
     private final JPanel contentPanel = new JPanel();
-    private VCard card;
+    private VCard card = null;
     private int result = ERROR_OPTION;
 
     private JTextField edtSurname;
@@ -99,12 +100,42 @@ public class CardDialog extends JDialog {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                synchronizeCard();
+                synchronizeCard(card);
                 result = APPROVE_OPTION;
                 setVisible(false);
             } catch (Exception e1) {
                 e1.printStackTrace();
                 JOptionPane.showMessageDialog(CardDialog.this, e1.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    };
+
+    private Action actSaveCard = new AbstractAction("Сохранить в файл") {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fc = getVCFFileChooser(PhoneBookFrame.model.getPhoneBookFile().getParentFile());
+            File newFile = new File(fc.getCurrentDirectory().getAbsolutePath() + "/" + edtName.getText() + "_" + edtSurname.getText() + ".vcf");
+            fc.setSelectedFile(newFile);
+            if (fc.showDialog(CardDialog.this, null) == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fc.getSelectedFile();
+                FileFilter choosedFilter = fc.getFileFilter();
+                if (choosedFilter instanceof FileNameExtensionFilter) {
+                    FileNameExtensionFilter filter = (FileNameExtensionFilter) choosedFilter;
+                    if (StringUtils.isEmpty(FilenameUtils.getExtension(selectedFile.getName()))) {
+                        selectedFile = new File(fc.getSelectedFile().getPath() + "." + Stream.of(filter.getExtensions()).findFirst().orElse("vcf"));
+                    }
+                }
+                try {
+                    Cloner cloner = new Cloner();
+                    VCard card = cloner.deepClone(CardDialog.this.card);
+                    synchronizeCard(card);
+                    card.write(selectedFile);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(CardDialog.this, e1.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     };
@@ -478,12 +509,19 @@ public class CardDialog extends JDialog {
         buttonPane.setLayout(new FlowLayout(FlowLayout.TRAILING));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
-        JButton okButton = new JButton(actOk);
-        buttonPane.add(okButton);
-        getRootPane().setDefaultButton(okButton);
-
-        JButton cancelButton = new JButton(actCancel);
-        buttonPane.add(cancelButton);
+        {
+            JButton button = new JButton(actSaveCard);
+            buttonPane.add(button);
+        }
+        {
+            JButton button = new JButton(actOk);
+            buttonPane.add(button);
+            getRootPane().setDefaultButton(button);
+        }
+        {
+            JButton button = new JButton(actCancel);
+            buttonPane.add(button);
+        }
 
         initName();
         initField(card.getEmails().stream(), pnlEmail);
@@ -544,6 +582,19 @@ public class CardDialog extends JDialog {
         });
     }
 
+    protected JFileChooser getVCFFileChooser(File currentFolder) {
+        UIManager.put("FileChooser.readOnly", Boolean.TRUE);
+        if (currentFolder == null) {
+            currentFolder = FileUtils.getFile(".");
+        }
+        JFileChooser fc = new JFileChooser(currentFolder);
+        fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fc.setMultiSelectionEnabled(false);
+        setFileChooserFilters(fc, "Файлы записных книг", "vcf");
+        return fc;
+    }
+
     protected JFileChooser getImageFileChooser(File currentFolder, int dialogType) {
         UIManager.put("FileChooser.readOnly", Boolean.TRUE);
         if (currentFolder == null) {
@@ -553,13 +604,13 @@ public class CardDialog extends JDialog {
         fc.setDialogType(dialogType);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);
-        setImageFilters(fc, "png", "jpg", "gif", "bmp");
+        setFileChooserFilters(fc, "Файлы изображений", "png", "jpg", "gif", "bmp");
         return fc;
     }
 
-    private void setImageFilters(JFileChooser fc, String... extension) {
+    private void setFileChooserFilters(JFileChooser fc, String description, String... extension) {
         Stream.of(extension).forEach(ext -> {
-            fc.addChoosableFileFilter(new FileNameExtensionFilter("Файлы изображений (*." + ext + ")", ext));
+            fc.addChoosableFileFilter(new FileNameExtensionFilter(description + " (*." + ext + ")", ext));
         });
         if (fc.getDialogType() == JFileChooser.SAVE_DIALOG) {
             fc.removeChoosableFileFilter(Stream.of(fc.getChoosableFileFilters()).findFirst().get());
@@ -599,7 +650,7 @@ public class CardDialog extends JDialog {
         return icon;
     }
 
-    protected void synchronizeCard() throws Exception {
+    protected void synchronizeCard(VCard card) throws Exception {
         StructuredName nameData = card.getStructuredName();
         nameData.setFamily(edtSurname.getText());
         nameData.setGiven(edtName.getText());
@@ -619,14 +670,14 @@ public class CardDialog extends JDialog {
         if (!StringUtils.isEmpty(edtParentName.getText()))
             nameData.addAdditional(edtParentName.getText());
 
-        syncField(Photo.class, null);
-        syncField(Telephone.class, pnlTelephones);
-        syncField(Email.class, pnlEmail);
-        syncField(Address.class, pnlAddresses);
+        syncField(card, Photo.class, null);
+        syncField(card, Telephone.class, pnlTelephones);
+        syncField(card, Email.class, pnlEmail);
+        syncField(card, Address.class, pnlAddresses);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends VCardProperty & HasAltId> void syncField(Class<T> clazz, Container container) throws Exception {
+    private <T extends VCardProperty & HasAltId> void syncField(VCard card, Class<T> clazz, Container container) throws Exception {
         card.setProperty(clazz, null);
         if (clazz.isAssignableFrom(Photo.class)) {
             ByteArrayOutputStream stream = null;

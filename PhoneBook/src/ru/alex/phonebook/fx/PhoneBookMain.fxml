@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.alex.phonebook.fx.PhoneBookMain">
+   <top>
+      <BorderPane prefHeight="36.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+         <left>
+            <Label text="Файл" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets left="5.0" />
+               </BorderPane.margin>
+            </Label>
+         </left>
+         <right>
+            <Button mnemonicParsing="false" onAction="#actOpenBook" text="Открыть" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets right="5.0" />
+               </BorderPane.margin>
+            </Button>
+         </right>
+         <center>
+            <TextField fx:id="edtPhoneBookFile" editable="false" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets left="5.0" right="5.0" />
+               </BorderPane.margin>
+            </TextField>
+         </center>
+      </BorderPane>
+   </top>
+   <center>
+      <TableView fx:id="table" onMouseClicked="#onMouseClick" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>
