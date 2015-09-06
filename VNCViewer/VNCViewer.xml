@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="VNCViewer">
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="D:/SVNAll/WS_SetStart"/>
+    <property name="dir.jarfile" value="${dir.buildfile}"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/VNCViewer.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.glavsoft.viewer.Viewer"/>
+                <attribute name="Class-Path" value="./src/libs/jsch-0.1.50.jar"/>
+            </manifest>
+            <fileset dir="${dir.jarfile}/bin"/>
+            <!--zipfileset dir="${dir.jarfile}/src/libs" includes="jsch-0.1.50.jar"/-->
+        </jar>
+    </target>
+</project>
