@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="VNCViewer">
+<project default="Generate EXE" name="VNCViewer">
+	
     <property name="dir.buildfile" value="."/>
     <property name="dir.workspace" value="D:/SVNAll/WS_SetStart"/>
     <property name="dir.jarfile" value="${dir.buildfile}"/>
@@ -13,4 +14,13 @@
             <!--zipfileset dir="${dir.jarfile}/src/libs" includes="jsch-0.1.50.jar"/-->
         </jar>
     </target>
+	
+	<target name="Generate EXE" depends="exe4j_exists" if="exe4j.exists">
+		<exec executable="D:/Program Files (x86)/exe4j/bin/exe4jc.exe" command="-v VNCViewer.exe4j"/>
+	</target>
+
+	<target name="exe4j_exists" depends="create_run_jar">
+		<available file="D:/Program Files (x86)/exe4j/bin" type="dir" property="exe4j.exists" />
+	</target>
+	
 </project>

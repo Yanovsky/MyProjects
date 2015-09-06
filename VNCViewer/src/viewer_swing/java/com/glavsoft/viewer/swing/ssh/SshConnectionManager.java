@@ -114,7 +114,6 @@ public class SshConnectionManager implements SshKnownHostsManager {
             String line = null;
 
             while ((line = bufferedReader.readLine()) != null) {
-                System.out.println(line);
                 if (line.startsWith("PORT")) {
                     break;
                 }
