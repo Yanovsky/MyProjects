@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="Generate EXE" name="XQuery">
+	
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.jarfile" value="${dir.buildfile}"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/XQuery.jar">
+            <fileset dir="${dir.jarfile}/bin"/>
+        </jar>
+    </target>
+	
+	<target name="Generate EXE" depends="exe4j_exists" if="exe4j.exists">
+		<exec executable="D:/Program Files (x86)/exe4j/bin/exe4jc.exe" command="-v XQuery.exe4j"/>
+	</target>
+
+	<target name="exe4j_exists" depends="create_run_jar">
+		<available file="D:/Program Files (x86)/exe4j/bin" type="dir" property="exe4j.exists" />
+	</target>
+	
+</project>

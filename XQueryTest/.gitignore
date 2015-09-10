@@ -1,2 +1,5 @@
 /bin/
 *.conf
+*.log
+*.exe
+*.jar
