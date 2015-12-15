@@ -110,7 +110,7 @@ public class EmulatorController {
         }
         Documents wayBillAct = (Documents) getUnmarshaller(Documents.class).unmarshal(new StringReader(xml));
         String replyId = makeTicket(wayBillAct);
-        return makePostAnswer(replyId, "B92CAD115B57B02C7D12ADC488066D99B60549D57A737B0CAC18E5E3E1C72E6B8D414C763CB58A5E67DE7C8C2ECE908451C4AE6838479A42ABBA8179D0CE8");
+        return makePostAnswer(replyId, RandomStringUtils.random(125, "0123456789ABCDEF"));
     }
 
     private String makeTicket(Documents wayBillAct) throws Exception {
@@ -124,16 +124,8 @@ public class EmulatorController {
         GregorianCalendar calendar = new GregorianCalendar();
         ticket.setTicketDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar));
         ticket.setIdentity(RandomStringUtils.randomNumeric(10));
-        ticket.setDocId(StringUtils.upperCase(RandomStringUtils.randomAlphanumeric(8) + "-" +
-                RandomStringUtils.randomAlphanumeric(4) + "-" +
-                RandomStringUtils.randomAlphanumeric(4) + "-" +
-                RandomStringUtils.randomAlphanumeric(4) + "-" +
-                RandomStringUtils.randomAlphanumeric(12)));
-        ticket.setTransportId(StringUtils.lowerCase(RandomStringUtils.randomAlphanumeric(8) + "-" +
-                RandomStringUtils.randomAlphanumeric(4) + "-" +
-                RandomStringUtils.randomAlphanumeric(4) + "-" +
-                RandomStringUtils.randomAlphanumeric(4) + "-" +
-                RandomStringUtils.randomAlphanumeric(12)));
+        ticket.setDocId(generateSign().toUpperCase());
+        ticket.setTransportId(generateSign());
         ticket.setRegID(RandomStringUtils.randomNumeric(10));
         ticket.setDocType("WayBill");
         TicketResultType result = documentsFactory.createTicketResultType();
@@ -157,7 +149,7 @@ public class EmulatorController {
     public String postPurchase(@RequestParam(value = "xml_file", required = false) MultipartFile file) throws Exception {
         System.out.println("postPurchase");
         System.out.println(openFile(file));
-        return makePostAnswer("3fbf9613-ddc3-4a6e-aa6f-3459466c2aa5", "B92CAD115B57B02C7D12ADC488066D99B60549D57A737B0CAC18E5E3E1C72E6B8D414C763CB58A5E67DE7C8C2ECE908451C4AE6838479A42ABBA8179D0CE8");
+        return makePostAnswer(generateSign(), "B92CAD115B57B02C7D12ADC488066D99B60549D57A737B0CAC18E5E3E1C72E6B8D414C763CB58A5E67DE7C8C2ECE908451C4AE6838479A42ABBA8179D0CE8");
     }
 
     private String openFile(MultipartFile file) {
@@ -168,6 +160,14 @@ public class EmulatorController {
         } catch (Exception e) {
         }
         return null;
+    }
+
+    private String generateSign() {
+        return RandomStringUtils.random(8, "0123456789abcdef") + "-" +
+                RandomStringUtils.random(4, "0123456789abcdef") + "-" +
+                RandomStringUtils.random(4, "0123456789abcdef") + "-" +
+                RandomStringUtils.random(4, "0123456789abcdef") + "-" +
+                RandomStringUtils.random(12, "0123456789abcdef");
     }
 
     private String makePostAnswer(String url, String sign) throws IOException, JAXBException {
