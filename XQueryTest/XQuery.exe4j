@@ -25,6 +25,8 @@
     <classPath>
       <archive location="./XQuery.jar" failOnError="false" />
       <archive location="../../SetRetail10_JBOSS7/SetRetail10_Cash/lib/apacheCommons/commons-lang-2.6.jar" failOnError="false" />
+      <archive location="D:/SVNAll/SetRetail10_JBOSS7/SetRetail10_Cash/lib/apacheCommons/commons-io-2.4.jar" failOnError="false" />
+      <archive location="D:/SVNAll/SetRetail10_JBOSS7/SetRetail10_Cash/lib/xml/BaseX78.jar" failOnError="false" />
     </classPath>
     <nativeLibraryDirectories />
   </java>
