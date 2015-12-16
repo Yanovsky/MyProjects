@@ -18,7 +18,6 @@ public enum Alcohol {
 
     private String description;
     private List<String> list = new ArrayList<String>();
-    private BigDecimal volume;
     private double minVolume;
     private double maxVolume;
 
