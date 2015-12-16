@@ -29,9 +29,9 @@ import ru.crystals.egais.documents.TicketResultType;
 import ru.crystals.egais.documents.TicketType;
 
 public class DocumentController {
-    private static final String docFolder = "Documents/";
-    private static final String tmpTicketFolder = "Documents/Tickets/";
-    private static final String trashFolder = "Documents/Trash/";
+    private static final String docFolder = "documents/";
+    private static final String tmpTicketFolder = docFolder + "Tickets/";
+    private static final String trashFolder = docFolder + "Trash/";
     private static ObjectFactory documentsFactory = new ObjectFactory();
     private static String wayBillList = null;
 
