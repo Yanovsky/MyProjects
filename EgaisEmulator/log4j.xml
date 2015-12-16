@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration PUBLIC "-//log4j/log4j Configuration//EN" "log4j.dtd">
+ 
+<log4j:configuration>
+ 
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <param name="Threshold" value="all"/>
+        <param name="Target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{dd.MM HH:mm:ss.SSS} %-5p [%c{1}] %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="file-service" class="org.apache.log4j.RollingFileAppender">
+        <param name="Threshold" value="all"/>
+        <param name="file" value="logs/service.log"/>
+        <param name="MaxFileSize" value="1000KB"/>
+        <param name="MaxBackupIndex" value="4"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{dd.MM HH:mm:ss.SSS} %-5p [%c{1}] %m%n"/>
+        </layout>
+    </appender>
+  
+    <appender name="file-acceptance" class="org.apache.log4j.RollingFileAppender">
+        <param name="Threshold" value="all"/>
+        <param name="file" value="logs/acceptance.log"/>
+        <param name="MaxFileSize" value="1000KB"/>
+        <param name="MaxBackupIndex" value="4"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{dd.MM HH:mm:ss.SSS} %-5p [%c{1}] %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="file-purchase" class="org.apache.log4j.RollingFileAppender">
+        <param name="Threshold" value="all"/>
+        <param name="file" value="logs/purchase.log"/>
+        <param name="MaxFileSize" value="1000KB"/>
+        <param name="MaxBackupIndex" value="4"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{dd.MM HH:mm:ss.SSS} %-5p [%c{1}] %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="ru.crystals.egais.EmulatorController" additivity="true">
+        <level value="all"/>
+        <appender-ref ref="file-service"/>
+    </logger>
+
+    <logger name="ru.crystals.egais.DocumentController" additivity="false">
+        <level value="all"/>
+        <appender-ref ref="file-acceptance"/>
+    </logger>
+ 
+    <root>
+        <priority value="error"/>
+        <appender-ref ref="console"/>
+    </root>
+     
+</log4j:configuration>

@@ -19,9 +19,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import ru.crystals.egais.documents.ConclusionType;
+import ru.crystals.egais.documents.ConfirmTicketType;
+import ru.crystals.egais.documents.ConfirmTicketType.Header;
 import ru.crystals.egais.documents.Documents;
 import ru.crystals.egais.documents.Documents.Document;
 import ru.crystals.egais.documents.ObjectFactory;
+import ru.crystals.egais.documents.SenderInfo;
 import ru.crystals.egais.documents.TicketResultType;
 import ru.crystals.egais.documents.TicketType;
 
@@ -30,26 +33,32 @@ public class DocumentController {
     private static final String tmpTicketFolder = "Documents/Tickets/";
     private static final String trashFolder = "Documents/Trash/";
     private static ObjectFactory documentsFactory = new ObjectFactory();
+    private static String wayBillList = null;
 
-    public static String getDocumentsListAnswer(String localAddress) throws Exception {
-        File folder = new File(docFolder);
-        if (folder.exists() && folder.isDirectory()) {
-            return AnswerController.makeAnswer(null, Arrays.stream(folder.list())
-                    .map(item -> {
-                        String url = null;
-                        File f = new File(docFolder + item);
-                        if (f.exists() && f.isFile()) {
-                            String docType = StringUtils.substringBefore(item, "_");
-                            String docIndex = StringUtils.substringAfter(item, "_");
-                            url = "http://" + localAddress + "/opt/out/" + docType + "/" + docIndex;
-                        }
-                        return url;
-                    })
-                    .filter(url -> StringUtils.isNotBlank(url) && StringUtils.endsWithIgnoreCase(url, ".xml"))
-                    .collect(Collectors.toList())
-                    .toArray(new String[0]));
+    public static String getDocumentsList(boolean refresh, String localAddress) throws Exception {
+        if (StringUtils.isBlank(wayBillList)) {
+            wayBillList = AnswerController.makeAnswer(null);
         }
-        return null;
+        if (refresh) {
+            File folder = new File(docFolder);
+            if (folder.exists() && folder.isDirectory()) {
+                wayBillList = AnswerController.makeAnswer(null, Arrays.stream(folder.list())
+                        .map(item -> {
+                            String url = null;
+                            File f = new File(docFolder + item);
+                            if (f.exists() && f.isFile()) {
+                                String docType = StringUtils.substringBefore(item, "_");
+                                String docIndex = StringUtils.substringAfter(item, "_");
+                                url = "http://" + localAddress + "/opt/out/" + docType + "/" + docIndex;
+                            }
+                            return url;
+                        })
+                        .filter(url -> StringUtils.isNotBlank(url) && StringUtils.endsWithIgnoreCase(url, ".xml"))
+                        .collect(Collectors.toList())
+                        .toArray(new String[0]));
+            }
+        }
+        return wayBillList;
     }
 
     public static String getDocument(String docType, long id) {
@@ -82,7 +91,55 @@ public class DocumentController {
         String xml = Commons.openFile(file);
         Documents wayBillAct = (Documents) Marchallers.getUnmarshaller(Documents.class).unmarshal(new StringReader(xml));
         String replyId = makeTicket(wayBillAct);
+        if (wayBillAct.getDocument().getWayBillAct().getContent().getPosition().size() > 0) {
+            makeConfirmTicket(wayBillAct);
+        }
         return AnswerController.makeAnswer(Commons.generateLongSign(), replyId);
+    }
+
+    private static void makeConfirmTicket(Documents wayBillAct) throws Exception {
+        Documents document = documentsFactory.createDocuments();
+        document.setVersion("1.0");
+
+        SenderInfo owner = documentsFactory.createSenderInfo();
+        owner.setFSRARID(RandomStringUtils.randomNumeric(8));
+        document.setOwner(owner);
+
+        Document doc = documentsFactory.createDocumentsDocument();
+        ConfirmTicketType ticket = documentsFactory.createConfirmTicketType();
+
+        GregorianCalendar calendar = new GregorianCalendar();
+
+        Header header = documentsFactory.createConfirmTicketTypeHeader();
+        header.setIsConfirm(ConclusionType.ACCEPTED);
+        header.setTicketDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar));
+        header.setTicketNumber(RandomStringUtils.randomNumeric(4));
+        header.setWBRegId(wayBillAct.getDocument().getWayBillAct().getHeader().getWBRegId());
+        header.setNote("Документ успешно принят.");
+        ticket.setHeader(header);
+        doc.setConfirmTicket(ticket);
+        document.setDocument(doc);
+
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            Marchallers.getMarshaller(Documents.class).marshal(document, stream);
+            File file = new File(tmpTicketFolder + "WayBillTicket_" + RandomUtils.nextInt(1, 300) + ".xml");
+            FileUtils.writeStringToFile(file, stream.toString());
+
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    File destFile = new File(docFolder + file.getName());
+                    try {
+                        FileUtils.copyFile(file, destFile);
+                        FileUtils.forceDelete(file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 6000);
+
+        }
     }
 
     private static String makeTicket(Documents wayBillAct) throws Exception {

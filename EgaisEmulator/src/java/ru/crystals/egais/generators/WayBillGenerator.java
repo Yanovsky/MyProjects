@@ -43,6 +43,13 @@ public enum WayBillGenerator {
     private String identity = RandomStringUtils.randomNumeric(5);
     private String wayBillNumber = RandomStringUtils.randomNumeric(5);
 
+    public static void main(String[] args) {
+        WayBillGenerator.INSTANCE.setStartIndex(1);
+        for (int i = 1; i <= 10; i++) {
+            WayBillGenerator.INSTANCE.setWayBillNumber(RandomStringUtils.randomAlphanumeric(5)).generate("3463047");
+        }
+    }
+
     public void generate(String fsRARID) {
         identity = RandomStringUtils.randomNumeric(5);
         Documents wayBill = generateWayBill(fsRARID, startIndex++);
@@ -88,14 +95,14 @@ public enum WayBillGenerator {
             PositionType pos = factory.createPositionType();
             pos.setIdentity(String.valueOf(i + 1));
             pos.setPackID("Палета");
-            pos.setPrice(BigDecimal.valueOf(RandomUtils.nextDouble(10.0, 1000.0)));
-            pos.setQuantity(BigDecimal.valueOf(RandomUtils.nextDouble(1, 100)));
+            pos.setPrice(BigDecimal.valueOf(RandomUtils.nextDouble(10.0, 1000.0)).setScale(2, RoundingMode.HALF_UP));
+            pos.setQuantity(BigDecimal.valueOf(RandomUtils.nextDouble(1, 100)).setScale(0, RoundingMode.HALF_UP));
             ProductInfo product = factory.createProductInfo();
             product.setAlcCode(RandomStringUtils.randomNumeric(19));
             product.setAlcVolume(BigDecimal.valueOf(RandomUtils.nextDouble(5.0, 41.0)).setScale(1, RoundingMode.HALF_UP));
             product.setCapacity(BigDecimal.valueOf(RandomUtils.nextDouble(0.2, 5.0)).setScale(1, RoundingMode.HALF_UP));
             product.setShortName("Алкогольный товар");
-            product.setFullName(product.getShortName() + " " + product.getAlcVolume() + "% " + product.getAlcVolume());
+            product.setFullName(product.getShortName() + " " + product.getAlcVolume() + "% об.");
             product.setProductVCode("200");
             pos.setProduct(product);
             content.getPosition().add(pos);
