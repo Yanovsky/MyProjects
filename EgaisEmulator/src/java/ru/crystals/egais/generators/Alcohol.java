@@ -14,21 +14,18 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public enum Alcohol {
-    WINE("Вино", "wine.txt"), 
-    VODKA("Водка", "vodka.txt", BigDecimal.valueOf(40)), 
-    BRANDY("Коньяк", "brandy.txt", BigDecimal.valueOf(40));
+    WINE("Вино", "wine.txt", 12, 20), VODKA("Водка", "vodka.txt", 40, 40), BRANDY("Коньяк", "brandy.txt", 40, 40);
 
     private String description;
     private List<String> list = new ArrayList<String>();
     private BigDecimal volume;
+    private double minVolume;
+    private double maxVolume;
 
-    private Alcohol(String description, String fileName) {
-        this(description, fileName, null);
-    }
-    
-    private Alcohol(String description, String fileName, BigDecimal volume) {
+    private Alcohol(String description, String fileName, double minVolume, double maxVolume) {
         this.description = description;
-        this.volume = volume;
+        this.minVolume = minVolume;
+        this.maxVolume = maxVolume;
         try {
             loadAlco("ru/crystals/egais/" + fileName);
         } catch (IOException e) {
@@ -53,11 +50,11 @@ public enum Alcohol {
     }
 
     public BigDecimal getVolume() {
-        return volume != null ? volume : BigDecimal.valueOf(RandomUtils.nextDouble(10.0, 25.0)).setScale(1, RoundingMode.HALF_UP);
+        return BigDecimal.valueOf(RandomUtils.nextDouble(minVolume, maxVolume)).setScale(1, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getCapacity() {
-        return BigDecimal.valueOf(RandomUtils.nextDouble(0.5, 1.0)).setScale(1, RoundingMode.HALF_UP);
+        return BigDecimal.valueOf(RandomUtils.nextDouble(0.5, 1.5)).setScale(1, RoundingMode.HALF_UP);
     }
 
  }
