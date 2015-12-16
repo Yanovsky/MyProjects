@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -26,9 +28,10 @@ import ru.crystals.egais.documents.TicketType;
 public class DocumentController {
     private static final String docFolder = "Documents/";
     private static final String tmpTicketFolder = "Documents/Tickets/";
+    private static final String trashFolder = "Documents/Trash/";
     private static ObjectFactory documentsFactory = new ObjectFactory();
 
-    public static String getDocumentsListAnswer() throws Exception {
+    public static String getDocumentsListAnswer(String localAddress) throws Exception {
         File folder = new File(docFolder);
         if (folder.exists() && folder.isDirectory()) {
             return AnswerController.makeAnswer(null, Arrays.stream(folder.list())
@@ -38,11 +41,11 @@ public class DocumentController {
                         if (f.exists() && f.isFile()) {
                             String docType = StringUtils.substringBefore(item, "_");
                             String docIndex = StringUtils.substringAfter(item, "_");
-                            url = "http://localhost:8080/opt/out/" + docType + "/" + docIndex;
+                            url = "http://" + localAddress + "/opt/out/" + docType + "/" + docIndex;
                         }
                         return url;
                     })
-                    .filter(url -> StringUtils.isNotBlank(url))
+                    .filter(url -> StringUtils.isNotBlank(url) && StringUtils.endsWithIgnoreCase(url, ".xml"))
                     .collect(Collectors.toList())
                     .toArray(new String[0]));
         }
@@ -63,8 +66,10 @@ public class DocumentController {
 
     public static String deleteDocument(String docType, long id) {
         File file = new File(docFolder + docType + "_" + id + ".xml");
+        File destFile = new File(trashFolder + docType + "_" + id + ".xml");
         if (file.exists()) {
             try {
+                FileUtils.copyFile(file, destFile);
                 FileUtils.forceDelete(file);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -75,7 +80,6 @@ public class DocumentController {
 
     public static String postWayBillAct(MultipartFile file) throws Exception {
         String xml = Commons.openFile(file);
-        System.out.println(xml);
         Documents wayBillAct = (Documents) Marchallers.getUnmarshaller(Documents.class).unmarshal(new StringReader(xml));
         String replyId = makeTicket(wayBillAct);
         return AnswerController.makeAnswer(Commons.generateLongSign(), replyId);
@@ -106,8 +110,23 @@ public class DocumentController {
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             Marchallers.getMarshaller(Documents.class).marshal(document, stream);
-            File filename = new File(tmpTicketFolder + "Ticket_" + RandomUtils.nextInt(1, 300) + ".xml");
-            FileUtils.writeStringToFile(filename, stream.toString());
+            File file = new File(tmpTicketFolder + "Ticket_" + RandomUtils.nextInt(1, 300) + ".xml");
+            FileUtils.writeStringToFile(file, stream.toString());
+
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    File destFile = new File(docFolder + file.getName());
+                    try {
+                        FileUtils.copyFile(file, destFile);
+                        FileUtils.forceDelete(file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 5000);
+
         }
 
         return ticket.getTransportId();

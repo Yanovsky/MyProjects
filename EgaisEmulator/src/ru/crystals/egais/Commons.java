@@ -3,6 +3,8 @@ package ru.crystals.egais;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import ru.crystals.egais.generators.WayBillGenerator;
+
 public class Commons {
 
     protected static String openFile(MultipartFile file) {
@@ -31,4 +33,10 @@ public class Commons {
         return RandomStringUtils.random(125, "0123456789ABCDEF");
     }
 
+    public static void main(String[] args) {
+        WayBillGenerator.INSTANCE.setStartIndex(1);
+        for (int i = 1; i <= 10; i++) {
+            WayBillGenerator.INSTANCE.setWayBillNumber(RandomStringUtils.randomAlphanumeric(5)).generate("3463047");
+        }
+    }
 }
