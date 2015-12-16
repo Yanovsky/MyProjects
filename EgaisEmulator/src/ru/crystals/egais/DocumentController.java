@@ -25,6 +25,7 @@ import ru.crystals.egais.documents.TicketType;
 
 public class DocumentController {
     private static final String docFolder = "Documents/";
+    private static final String tmpTicketFolder = "Documents/Tickets/";
     private static ObjectFactory documentsFactory = new ObjectFactory();
 
     public static String getDocumentsListAnswer() throws Exception {
@@ -41,7 +42,7 @@ public class DocumentController {
                         }
                         return url;
                     })
-                    .filter(url -> url != null)
+                    .filter(url -> StringUtils.isNotBlank(url))
                     .collect(Collectors.toList())
                     .toArray(new String[0]));
         }
@@ -105,7 +106,7 @@ public class DocumentController {
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             Marchallers.getMarshaller(Documents.class).marshal(document, stream);
-            File filename = new File(docFolder + "Ticket_" + RandomUtils.nextInt(1, 300) + ".xml");
+            File filename = new File(tmpTicketFolder + "Ticket_" + RandomUtils.nextInt(1, 300) + ".xml");
             FileUtils.writeStringToFile(filename, stream.toString());
         }
 
