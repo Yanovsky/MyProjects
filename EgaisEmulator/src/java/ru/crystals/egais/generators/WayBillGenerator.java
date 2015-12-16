@@ -99,11 +99,15 @@ public enum WayBillGenerator {
             pos.setQuantity(BigDecimal.valueOf(RandomUtils.nextDouble(1, 100)).setScale(0, RoundingMode.HALF_UP));
             ProductInfo product = factory.createProductInfo();
             product.setAlcCode(RandomStringUtils.randomNumeric(19));
-            product.setAlcVolume(BigDecimal.valueOf(RandomUtils.nextDouble(5.0, 41.0)).setScale(1, RoundingMode.HALF_UP));
-            product.setCapacity(BigDecimal.valueOf(RandomUtils.nextDouble(0.2, 5.0)).setScale(1, RoundingMode.HALF_UP));
-            product.setShortName("Алкогольный товар");
-            product.setFullName(product.getShortName() + " " + product.getAlcVolume() + "% об.");
+
+            Alcohol alcohol = Alcohol.values()[RandomUtils.nextInt(0, Alcohol.values().length)];
+            product.setAlcVolume(alcohol.getVolume());
+            product.setCapacity(alcohol.getCapacity());
+            product.setShortName(alcohol.getRandom());
+            product.setFullName(alcohol.getDescription() + " \"" + product.getShortName() + "\" " + alcohol.getVolume() + "%");
+
             product.setProductVCode("200");
+
             pos.setProduct(product);
             content.getPosition().add(pos);
         }
