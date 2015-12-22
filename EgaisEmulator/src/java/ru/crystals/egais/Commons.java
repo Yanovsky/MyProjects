@@ -28,7 +28,7 @@ public class Commons {
     }
 
     public static String generateLongSign() {
-        return RandomStringUtils.random(125, "0123456789ABCDEF");
+        return RandomStringUtils.random(128, "0123456789ABCDEF");
     }
 
 }
