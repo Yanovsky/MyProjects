@@ -1,17 +1,10 @@
-apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
-mainClassName = 'ru.crystals.egais.EmulatorService'
-
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-jar {
-    baseName = 'EGAISEmulatorService'
-}
 
 repositories {
     mavenCentral()
@@ -34,6 +27,47 @@ dependencies {
     testCompile("junit:junit")
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+task copyToLib( type: Copy ) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+	dependsOn jar
+}
+
+task stopService(type: Exec) {
+	ignoreExitValue = true
+	executable "net"
+	args "stop", "EGAISEmulator"
+}
+
+task compileService(type: Exec) {
+	executable "D:/Program Files/exe4j/bin/exe4jc.exe"
+	args "-v", "EGAISEmulator.exe4j"
+	dependsOn copyToLib
+}
+
+task installService(type: Exec) {
+    ignoreExitValue = true
+    executable "EGAISEmulatorService.exe"
+    args "/install"
+    dependsOn compileService
+}
+
+task startService(type: Exec) {
+	ignoreExitValue = true
+	executable "net"
+	args "start", "EGAISEmulator"
+	dependsOn installService
+}
+
+task make {
+	dependsOn startService
+}
+
+clean {
+	dependsOn stopService
+}
+
+jar {
+    baseName = 'EGAISEmulatorService'
+	dependsOn stopService
 }

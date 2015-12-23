@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<exe4j version="5.0.1" transformSequenceNumber="2">
+<exe4j version="4.5" transformSequenceNumber="1">
   <directoryPresets config="D:/SVNAll/MyProjects/EgaisEmulator/build/libs" />
   <application name="EGAISEmulator" distributionSourceDir="D:/SVNAll/MyProjects/EgaisEmulator">
     <languages>
@@ -23,7 +23,7 @@
       <envVar name="JDK_HOME" />
     </searchSequence>
     <classPath>
-      <archive location="./build/libs/EGAISEmulatorService.jar" failOnError="false" />
+      <archive location="D:/SVNAll/MyProjects/EgaisEmulator/build/libs/EGAISEmulatorService.jar" failOnError="false" />
       <scanDirectory location="./build/libs/lib" failOnError="false" />
     </classPath>
     <nativeLibraryDirectories />

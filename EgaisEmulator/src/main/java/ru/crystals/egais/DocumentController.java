@@ -65,7 +65,7 @@ public class DocumentController {
         File file = new File(docFolder + docType + "_" + id + ".xml");
         if (file.exists()) {
             try {
-                return FileUtils.readFileToString(file);
+                return FileUtils.readFileToString(file, "UTF-8");
             } catch (IOException e) {
                 e.printStackTrace();
             }
