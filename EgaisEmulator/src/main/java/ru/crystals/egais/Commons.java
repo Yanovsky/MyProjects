@@ -1,5 +1,9 @@
 package ru.crystals.egais;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +33,17 @@ public class Commons {
 
     public static String generateLongSign() {
         return RandomStringUtils.random(128, "0123456789ABCDEF");
+    }
+
+    public static String getMainHTML(String url) {
+        ClassLoader classLoader = Commons.class.getClassLoader();
+        File file = new File(classLoader.getResource("ru/crystals/egais/TT.html").getFile());
+        try {
+            return FileUtils.readFileToString(file).replaceAll("./eagle.png", url + "/eagle.png");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

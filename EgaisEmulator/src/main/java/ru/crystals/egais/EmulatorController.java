@@ -1,9 +1,15 @@
 package ru.crystals.egais;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URISyntaxException;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,5 +51,11 @@ public class EmulatorController {
         return PurchaseController.postPurchase(file);
     }
 
+    @RequestMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
+    public void getMain(HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
+        log.info("[{}:{}] invoke getMain", request.getRemoteHost(), request.getRemotePort());
+        PrintWriter writer = response.getWriter();
+        writer.println(Commons.getMainHTML(request.getHeader("host")));
+    }
 
 }
