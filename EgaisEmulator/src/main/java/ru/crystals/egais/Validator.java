@@ -17,10 +17,10 @@ public class Validator {
     private static final Pattern EXCISE_BARCODE_PATTERN = Pattern.compile("^\\d\\d\\w{21}\\d[0-1]\\d[0-3]\\d{10}\\w{31}$");
 
     public static void validatePurchase(Cheque purchase) throws EgaisException {
-        if (Validator.isINNValid(purchase.getInn())) {
+        if (!Validator.isINNValid(purchase.getInn())) {
             throw new EgaisException("Не заполнен или неверный ИНН");
         }
-        if (Validator.isValidKPP(purchase.getKpp())) {
+        if (!Validator.isValidKPP(purchase.getKpp())) {
             throw new EgaisException("Не заполнен или неверный КПП");
         }
         if (StringUtils.isBlank(purchase.getKassa())) {
