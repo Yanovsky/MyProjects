@@ -1,1 +1,7 @@
+build/
+Logs/
 bin/ru/
+.gradle
+.settings
+*.exe
+*.jar
