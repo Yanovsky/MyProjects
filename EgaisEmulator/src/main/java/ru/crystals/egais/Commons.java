@@ -2,6 +2,8 @@ package ru.crystals.egais;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class Commons {
 
-    private static final String WEB_PATH = "/ru/crystals/egais/web/";
+    private static final String WEB_PATH = "./web/";
 
     protected static String openFile(MultipartFile file) {
         String result = null;
@@ -44,7 +46,30 @@ public class Commons {
     }
 
     public static byte[] getBytes(String path) {
-        return readBytesFromJar(WEB_PATH + (StringUtils.isBlank(path) ? "index.html" : path));
+        return readBytesFromFile(WEB_PATH + (StringUtils.isBlank(path) ? "index.html" : path));
+    }
+
+    public static byte[] readBytesFromFile(String path) {
+        File file = new File(path);
+        FileInputStream is = null;
+        DataInputStream reader = null;
+        try {
+            is = new FileInputStream(file);
+            reader = new DataInputStream(is);
+            byte bytes[] = new byte[is.available()];
+            reader.readFully(bytes);
+            return bytes;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return new byte[0];
     }
 
     public static byte[] readBytesFromJar(String path) {
