@@ -1,0 +1,26 @@
+/* Когда курсор над списком сертов или xsd */
+.doc-link:hover {
+    background-color: white;
+    border-color: black;
+    cursor:pointer;
+}
+/* Все ссылки без подчеркивания */
+a:hover {
+    text-decoration: none;
+}
+/* Для однотипности цвет фона как у тега PRE */
+.container-grey{
+    background-color:#f5f5f5;
+    border:1px solid #ccc;
+    border-radius:4px;
+}
+/* Делаем modal пошире */
+#docModal .modal-dialog {     
+    width: 75%;  	 
+}
+/* Хром без этого не включает прокрутку мышью */
+/* Так же это решило ряд проблем с IExplorer и IEdge */
+.modal.in {
+    -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+}

@@ -1,13 +1,21 @@
 package ru.crystals.egais;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 public class Commons {
+
+    private static final String WEB_PATH = "/ru/crystals/egais/web/";
 
     protected static String openFile(MultipartFile file) {
         String result = null;
@@ -35,15 +43,54 @@ public class Commons {
         return RandomStringUtils.random(128, "0123456789ABCDEF");
     }
 
-    public static String getMainHTML(String url) {
-        ClassLoader classLoader = Commons.class.getClassLoader();
-        File file = new File(classLoader.getResource("ru/crystals/egais/TT.html").getFile());
+    public static byte[] getBytes(String path) {
+        return readBytesFromJar(WEB_PATH + (StringUtils.isBlank(path) ? "index.html" : path));
+    }
+
+    public static byte[] readBytesFromJar(String path) {
+        InputStream is = null;
+        DataInputStream reader = null;
         try {
-            return FileUtils.readFileToString(file).replaceAll("./eagle.png", url + "/eagle.png");
-        } catch (IOException e) {
+            is = FileUtils.class.getResourceAsStream(path);
+            reader = new DataInputStream(is);
+            byte bytes[] = new byte[is.available()];
+            reader.readFully(bytes);
+            return bytes;
+        } catch (Exception e) {
             e.printStackTrace();
-            return null;
+        } finally {
+            try {
+                if (reader != null)
+                    reader.close();
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        return new byte[0];
+    }
+
+    public static String readTextFromJar(String path) {
+        InputStream is = null;
+        BufferedReader br = null;
+        try {
+            is = FileUtils.class.getResourceAsStream(path);
+            br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+            return br.lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null)
+                    br.close();
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
     }
 
 }

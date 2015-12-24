@@ -1,6 +1,7 @@
 build/
 Logs/
 bin/ru/
+gradle/
 .gradle
 .settings
 *.exe
