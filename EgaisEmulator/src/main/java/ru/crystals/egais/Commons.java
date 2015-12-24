@@ -51,22 +51,24 @@ public class Commons {
 
     public static byte[] readBytesFromFile(String path) {
         File file = new File(path);
-        FileInputStream is = null;
-        DataInputStream reader = null;
-        try {
-            is = new FileInputStream(file);
-            reader = new DataInputStream(is);
-            byte bytes[] = new byte[is.available()];
-            reader.readFully(bytes);
-            return bytes;
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+        if (file.exists()) {
+            FileInputStream is = null;
+            DataInputStream reader = null;
             try {
-                if (is != null)
-                    is.close();
-            } catch (IOException e) {
+                is = new FileInputStream(file);
+                reader = new DataInputStream(is);
+                byte bytes[] = new byte[is.available()];
+                reader.readFully(bytes);
+                return bytes;
+            } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    if (is != null)
+                        is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return new byte[0];
