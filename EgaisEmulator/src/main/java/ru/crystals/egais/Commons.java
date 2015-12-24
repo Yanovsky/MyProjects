@@ -7,7 +7,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -118,6 +123,32 @@ public class Commons {
             }
         }
         return "";
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getCurrentIp().getHostAddress());
+    }
+
+    public static InetAddress getCurrentIp() {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface
+                    .getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface ni = (NetworkInterface) networkInterfaces.nextElement();
+                Enumeration<InetAddress> nias = ni.getInetAddresses();
+                while (nias.hasMoreElements()) {
+                    InetAddress ia = (InetAddress) nias.nextElement();
+                    if (!ia.isLinkLocalAddress()
+                            && !ia.isLoopbackAddress()
+                            && ia instanceof Inet4Address) {
+                        return ia;
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            // LOG.error("unable to get current IP " + e.getMessage(), e);
+        }
+        return null;
     }
 
 }

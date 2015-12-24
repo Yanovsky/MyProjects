@@ -49,15 +49,21 @@ public class EmulatorController {
     @RequestMapping(method = RequestMethod.POST, value = "/xml")
     public String postPurchase(@RequestParam(value = "xml_file", required = false) MultipartFile file, HttpServletRequest request) throws Exception {
         log.info("[{}:{}] invoke postPurchase xml_file={}", request.getRemoteHost(), request.getRemotePort(), Commons.openFile(file));
-        return PurchaseController.postPurchase(file);
+        return PurchaseController.postPurchase(file, request.getLocalPort());
     }
 
     @RequestMapping(value = { "*", "*/*" }, produces = MediaType.ALL_VALUE)
-    public void getWeb(HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
-        log.info("[{}:{}] invoke get {}", request.getRemoteHost(), request.getRemotePort(), request.getRequestURL());
-        ServletOutputStream stream = response.getOutputStream();
-        String path = StringUtils.substringAfter(request.getRequestURL().toString(), request.getHeader("referer"));
-        stream.write(Commons.getBytes(path));
+    public void getWeb(@RequestParam(value = "id", defaultValue = "") String id, HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
+        log.info("[{}:{}] invoke getWeb {}", request.getRemoteHost(), request.getRemotePort(), request.getRequestURL());
+        if (!StringUtils.isBlank(id)) {
+            log.info("load purchase " + id);
+            ServletOutputStream stream = response.getOutputStream();
+            stream.write(PurchaseController.getPurchase(id));
+        } else {
+            ServletOutputStream stream = response.getOutputStream();
+            String path = StringUtils.substringAfter(request.getRequestURL().toString(), request.getHeader("referer"));
+            stream.write(Commons.getBytes(path));
+        }
     }
 
 }
