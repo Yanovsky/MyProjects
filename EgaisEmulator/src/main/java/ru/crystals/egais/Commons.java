@@ -18,35 +18,35 @@ import org.springframework.web.multipart.MultipartFile;
 public class Commons {
 
     private static final String WEB_PATH = "./web/";
+    private static final String SIGN_SHORT_CHARS = "0123456789abcdef";
+    private static final String SIGN_LONG_CHARS = SIGN_SHORT_CHARS.toUpperCase();
+    private static final String INDEX_HTML = "index.html";
+    private static final String BOM_CHAR = "\uFEFF";
 
     protected static String openFile(MultipartFile file) {
-        String result = null;
         try {
             if (!file.isEmpty()) {
-                result = new String(file.getBytes());
-                if (result.startsWith("\uFEFF")) {
-                    result = result.substring(1);
-                }
+                return StringUtils.removeStart(new String(file.getBytes(), StandardCharsets.UTF_8), BOM_CHAR);
             }
         } catch (Exception e) {
         }
-        return result;
+        return null;
     }
 
     protected static String generateShortSign() {
-        return RandomStringUtils.random(8, "0123456789abcdef") + "-" +
-                RandomStringUtils.random(4, "0123456789abcdef") + "-" +
-                RandomStringUtils.random(4, "0123456789abcdef") + "-" +
-                RandomStringUtils.random(4, "0123456789abcdef") + "-" +
-                RandomStringUtils.random(12, "0123456789abcdef");
+        return RandomStringUtils.random(8, SIGN_SHORT_CHARS) + "-" +
+                RandomStringUtils.random(4, SIGN_SHORT_CHARS) + "-" +
+                RandomStringUtils.random(4, SIGN_SHORT_CHARS) + "-" +
+                RandomStringUtils.random(4, SIGN_SHORT_CHARS) + "-" +
+                RandomStringUtils.random(12, SIGN_SHORT_CHARS);
     }
 
     public static String generateLongSign() {
-        return RandomStringUtils.random(128, "0123456789ABCDEF");
+        return RandomStringUtils.random(128, SIGN_LONG_CHARS);
     }
 
     public static byte[] getBytes(String path) {
-        return readBytesFromFile(WEB_PATH + (StringUtils.isBlank(path) ? "index.html" : path));
+        return readBytesFromFile(WEB_PATH + (StringUtils.isBlank(path) ? INDEX_HTML : path));
     }
 
     public static byte[] readBytesFromFile(String path) {

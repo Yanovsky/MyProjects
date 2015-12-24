@@ -19,10 +19,10 @@ public class PurchaseController {
 
         try {
             Validator.validatePurchase(purchase);
-            String url = "http://check.egais.ru?id=" 
-                            + Commons.generateShortSign() 
-                            + "&dt=" + fd.format(Calendar.getInstance().getTime()) 
-                            + "&cn=" + RandomStringUtils.randomNumeric(12);
+            String url = String.format("http://check.egais.ru?id=%s&dt=%s&cn=%s",
+                    Commons.generateShortSign(),
+                    fd.format(Calendar.getInstance().getTime()),
+                    RandomStringUtils.randomNumeric(12));
             return AnswerController.makeAnswer(Commons.generateLongSign(), url);
         } catch (EgaisException e) {
             return AnswerController.makeAnswer(e);
