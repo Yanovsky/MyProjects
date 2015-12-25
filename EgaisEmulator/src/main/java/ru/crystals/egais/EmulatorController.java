@@ -1,8 +1,5 @@
 package ru.crystals.egais;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,7 +50,7 @@ public class EmulatorController {
     }
 
     @RequestMapping(value = { "*", "*/*" }, produces = MediaType.ALL_VALUE)
-    public void getWeb(@RequestParam(value = "id", defaultValue = "") String id, HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
+    public void getWeb(@RequestParam(value = "id", defaultValue = "") String id, HttpServletRequest request, HttpServletResponse response) throws Exception {
         log.info("[{}:{}] invoke getWeb {}", request.getRemoteHost(), request.getRemotePort(), request.getRequestURL());
         if (!StringUtils.isBlank(id)) {
             log.info("load purchase " + id);
@@ -61,7 +58,7 @@ public class EmulatorController {
             stream.write(PurchaseController.getPurchase(id));
         } else {
             ServletOutputStream stream = response.getOutputStream();
-            String path = StringUtils.substringAfter(request.getRequestURL().toString(), request.getHeader("referer"));
+            String path = StringUtils.substringAfter(request.getRequestURL().toString(), request.getHeader("host") + "/");
             stream.write(Commons.getBytes(path));
         }
     }

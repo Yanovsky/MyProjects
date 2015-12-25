@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class Commons {
 
-    private static final String WEB_PATH = "./web/";
+    protected static final String WEB_PATH = "./web/";
     private static final String SIGN_SHORT_CHARS = "0123456789abcdef";
     private static final String SIGN_LONG_CHARS = SIGN_SHORT_CHARS.toUpperCase();
     private static final String INDEX_HTML = "index.html";
@@ -52,6 +52,56 @@ public class Commons {
 
     public static byte[] getBytes(String path) {
         return readBytesFromFile(WEB_PATH + (StringUtils.isBlank(path) ? INDEX_HTML : path));
+    }
+
+    public static String readTextFromJar(String path) {
+        File file = new File(path);
+        if (file.exists()) {
+            InputStream is = null;
+            BufferedReader br = null;
+            try {
+                is = new FileInputStream(file);
+                br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                return br.lines().collect(Collectors.joining(System.lineSeparator()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (br != null)
+                        br.close();
+                    if (is != null)
+                        is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
+    }
+    
+    public static String readTextFromFile(String path) {
+        File file = new File(path);
+        if (file.exists()) {
+            InputStream is = null;
+            BufferedReader br = null;
+            try {
+                is = new FileInputStream(file);
+                br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                return br.lines().collect(Collectors.joining(System.lineSeparator()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (br != null)
+                        br.close();
+                    if (is != null)
+                        is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
     }
 
     public static byte[] readBytesFromFile(String path) {
@@ -103,44 +153,19 @@ public class Commons {
         return new byte[0];
     }
 
-    public static String readTextFromJar(String path) {
-        InputStream is = null;
-        BufferedReader br = null;
-        try {
-            is = FileUtils.class.getResourceAsStream(path);
-            br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            return br.lines().collect(Collectors.joining(System.lineSeparator()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (br != null)
-                    br.close();
-                if (is != null)
-                    is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return "";
-    }
-
     public static void main(String[] args) {
         System.out.println(getCurrentIp().getHostAddress());
     }
 
     public static InetAddress getCurrentIp() {
         try {
-            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface
-                    .getNetworkInterfaces();
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface ni = (NetworkInterface) networkInterfaces.nextElement();
                 Enumeration<InetAddress> nias = ni.getInetAddresses();
                 while (nias.hasMoreElements()) {
                     InetAddress ia = (InetAddress) nias.nextElement();
-                    if (!ia.isLinkLocalAddress()
-                            && !ia.isLoopbackAddress()
-                            && ia instanceof Inet4Address) {
+                    if (!ia.isLinkLocalAddress() && !ia.isLoopbackAddress() && ia instanceof Inet4Address) {
                         return ia;
                     }
                 }
