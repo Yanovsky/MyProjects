@@ -176,6 +176,7 @@ public class XQueryForm extends JFrame {
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 try {
                     XQueryForm frame = new XQueryForm();
@@ -192,7 +193,7 @@ public class XQueryForm extends JFrame {
         try {
             System.setProperty("user.dir", new File(homeDir).getAbsolutePath());
             Context context = new Context();
-            new org.basex.core.cmd.Set("EXPORTER", "method=xml, version=1.0, omit-xml-declaration=no, indents=8, format=yes").execute(context);
+            new org.basex.core.cmd.Set("EXPORTER", "method=xml, version=1.0, omit-xml-declaration=no, indents=8").execute(context);
             new org.basex.core.cmd.Set("INTPARSE", "true").execute(context);
             new org.basex.core.cmd.Set("WRITEBACK", "true").execute(context);
             new XQuery(scriptContent).execute(context);
@@ -353,11 +354,13 @@ public class XQueryForm extends JFrame {
         edtScriptContent = new JTextArea();
         edtScriptContent.setFont(new Font("Monospaced", Font.PLAIN, 12));
         edtScriptContent.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger())
                     doPop(e);
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger())
                     doPop(e);
