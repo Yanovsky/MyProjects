@@ -81,7 +81,7 @@ public class PhoneBookModel extends AbstractTableModel {
 
     public void setPhoneBookFile(File phoneBookFile) throws IOException {
         if (phoneBookFile != null && phoneBookFile.exists()) {
-            originalPhonebook = Ezvcard.parse(phoneBookFile).all().stream().sorted(nameSorter).filter(filterPredicate).collect(Collectors.toList());
+            originalPhonebook = Ezvcard.parse(phoneBookFile).all().stream().sorted(nameSorter)/*.filter(filterPredicate)*/.collect(Collectors.toList());
             Collections.sort(originalPhonebook, nameSorter);
             setFilter(Optional.ofNullable(filter), false);
         }
