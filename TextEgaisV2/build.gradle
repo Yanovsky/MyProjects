@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+
+    }
+}
+
+dependencies {
+    compile('org.apache.commons:commons-lang3:3.4',
+            'org.apache.commons:commons-io:1.3.2'
+    )
+    compile group: 'org.codehaus.woodstox', name: 'stax2-api', version: '4.0.0';
+
+//            'net.sourceforge.jexcelapi:jxl:2.6.10',
+//            'org.apache.poi:poi:3.13',
+//            'org.apache.poi:poi-ooxml:3.13'
+
+
+}
+
