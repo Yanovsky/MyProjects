@@ -33,7 +33,7 @@ jar {
         attributes(
             'Manifest-Version': '1.0',
             'Main-Class': 'ru.alex.barcode.Generator',
-            'Class-Path': configurations.compile.collect { it.getName() }.join(' ')
+            'Class-Path': configurations.compile.collect { 'lib/'+it.getName() }.join(' ')
         )
     }
 }
