@@ -95,6 +95,11 @@ public class Generator {
         try {
             Properties props = new Properties();
             props.putAll(Stream.of(args).collect(Collectors.toMap(s -> StringUtils.substringBefore(s, "="), v -> StringUtils.substringAfter(v, "="))));
+            if (props.isEmpty()) {
+                MainScreen mainScreen = new MainScreen();
+                mainScreen.setVisible(true);
+                return;
+            }
             String separator = props.getProperty("separator", SEPARATOR);
             if (props.containsKey("-h") || props.containsKey("--h") || props.containsKey("/?")) {
                 System.out.println(HELP);
