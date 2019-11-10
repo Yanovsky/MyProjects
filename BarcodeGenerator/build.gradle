@@ -47,3 +47,7 @@ task copyToLib(type: Copy) {
 task make {
     dependsOn copyToLib
 }
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

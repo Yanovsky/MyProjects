@@ -64,8 +64,12 @@ public class MainScreen extends RetentiveFrame {
 
     @Override
     protected void saveParameters() {
-        properties.setProperty("fileInput", fileInput.toString());
-        properties.setProperty("fileOutput", fileOutput.toString());
+        if (fileInput != null) {
+            properties.setProperty("fileInput", fileInput.toString());
+        }
+        if (fileOutput != null) {
+            properties.setProperty("fileOutput", fileOutput.toString());
+        }
         properties.setProperty("delimiter", Objects.requireNonNull(delimiter.getSelectedItem()).toString());
         properties.setProperty("encoding", Objects.requireNonNull(encoding.getSelectedItem()).toString());
         properties.setProperty("barcodeType", Objects.requireNonNull(barcodeType.getSelectedItem()).toString());
@@ -97,7 +101,7 @@ public class MainScreen extends RetentiveFrame {
         if (properties.containsKey("barcodeType")) {
             barcodeType.setSelectedItem(BarcodeFormat.valueOf(properties.getProperty("barcodeType")));
         }
-        delimiter.setSelectedItem(properties.getProperty("delimiter").charAt(0));
+        delimiter.setSelectedItem(properties.getProperty("delimiter", "^").charAt(0));
         if (fileInput != null) {
             SwingUtilities.invokeLater(() -> {
                 try {
