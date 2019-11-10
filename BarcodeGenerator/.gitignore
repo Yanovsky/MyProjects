@@ -1,3 +1,5 @@
 /.gradle/
 /out/
 *.txt
+/*.properties
+/*.doc

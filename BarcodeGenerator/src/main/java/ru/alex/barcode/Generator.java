@@ -50,6 +50,9 @@ public class Generator {
 
     @SuppressWarnings("WeakerAccess")
     public static void generate(BarcodeFormat format, Map<String, List<String>> barcodes, Path outputFile) throws Exception {
+        if (outputFile == null) {
+            throw new Exception("Не указан файл для выгрузки");
+        }
         MultiFormatWriter barcodeProducer = new MultiFormatWriter();
         XWPFDocument document = new XWPFDocument();
 
@@ -96,7 +99,7 @@ public class Generator {
             Properties props = new Properties();
             props.putAll(Stream.of(args).collect(Collectors.toMap(s -> StringUtils.substringBefore(s, "="), v -> StringUtils.substringAfter(v, "="))));
             if (props.isEmpty()) {
-                MainScreen mainScreen = new MainScreen();
+                MainScreen mainScreen = new MainScreen("barcodeGenerator.properties");
                 mainScreen.setVisible(true);
                 return;
             }
