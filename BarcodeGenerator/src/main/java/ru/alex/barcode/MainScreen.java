@@ -1,7 +1,6 @@
 package ru.alex.barcode;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -13,11 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -31,12 +28,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,11 +39,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.zxing.BarcodeFormat;
 
 import ru.alex.barcode.tools.RetentiveFrame;
-import ru.alex.barcode.visual.TableModel;
+import ru.alex.barcode.visual.TreeModel;
 
 public class MainScreen extends RetentiveFrame {
-    private List<String> lines = Collections.emptyList();
-    private final TableModel model = new TableModel();
     private Path fileOutput;
     private Path fileInput;
     private JTextField edtFileInput;
@@ -60,7 +53,7 @@ public class MainScreen extends RetentiveFrame {
     private JButton btnBegin;
     private JPanel pnlMain;
     private JComboBox<Character> delimiter;
-    private JTable tblData;
+    private JTree treeData;
 
     @Override
     protected void saveParameters() {
@@ -127,7 +120,6 @@ public class MainScreen extends RetentiveFrame {
         barcodeType.setSelectedItem(BarcodeFormat.PDF_417);
         delimiter.setModel(new DefaultComboBoxModel<>(new Character[]{ '~', '^', '|', ';' }));
         delimiter.setSelectedIndex(0);
-        tblData.setModel(model);
 
         btnLoadInput.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
@@ -139,11 +131,7 @@ public class MainScreen extends RetentiveFrame {
             if (fileChooser.showOpenDialog(pnlMain) == JFileChooser.APPROVE_OPTION) {
                 fileInput = Paths.get(fileChooser.getSelectedFile().toURI());
                 edtFileInput.setText(fileInput.toString());
-                try {
-                    loadData();
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(pnlMain, ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
-                }
+                loadData();
             }
         });
         btnLoadOutput.addActionListener(e -> {
@@ -163,31 +151,19 @@ public class MainScreen extends RetentiveFrame {
                 edtFileOutput.setText(fileOutput.toString());
             }
         });
-        delimiter.addActionListener(e -> {
-            if (fileInput != null) {
-                model.setDelimiter(Objects.requireNonNull(delimiter.getSelectedItem()).toString());
-                resizeColumnWidth(tblData);
-            }
-        });
-        btnBegin.addActionListener(e -> {
-            String separator = Objects.requireNonNull(delimiter.getSelectedItem()).toString();
-            try {
-                if (lines.stream().anyMatch(s -> StringUtils.isBlank(StringUtils.substringAfter(s, separator)))) {
-                    throw new Exception("Список акцизных марок пуст.\nПроверьте правильно ли выбран разделитель");
-                }
+        delimiter.addActionListener(e -> loadData());
+        encoding.addActionListener(e -> loadData());
 
-                Map<String, List<String>> excises = lines.stream()
-                    .collect(
-                        Collectors.groupingBy(
-                            s -> StringUtils.substringBefore(s, separator),
-                            Collectors.mapping(n -> StringUtils.trimToNull(StringUtils.substringAfter(n, separator)), Collectors.toList())
-                        )
-                    );
-                if (excises.isEmpty()) {
+        btnBegin.addActionListener(e -> {
+            try {
+                Map<String, List<String>> data = ((TreeModel) treeData.getModel()).getData();
+                if (data.isEmpty()) {
                     throw new Exception("Список пуст");
                 }
-
-                Generator.generate((BarcodeFormat) barcodeType.getSelectedItem(), excises, fileOutput);
+                if (data.values().stream().allMatch(List::isEmpty)) {
+                    throw new Exception("Список акцизных марок пуст.\nПроверьте правильно ли выбран разделитель");
+                }
+                Generator.generate((BarcodeFormat) barcodeType.getSelectedItem(), data, fileOutput);
                 if (JOptionPane.showInternalConfirmDialog(
                     pnlMain,
                     String.format("Файл %s сформирован\nОткрыть в MS Word?", fileOutput.toString()),
@@ -205,22 +181,14 @@ public class MainScreen extends RetentiveFrame {
         loadParameters();
     }
 
-    private void loadData() throws IOException {
-        lines = FileUtils.readLines(fileInput.toFile(), Charset.forName(Objects.requireNonNull(encoding.getSelectedItem()).toString()));
-        model.setLines(lines, Objects.requireNonNull(delimiter.getSelectedItem()).toString());
-        resizeColumnWidth(tblData);
-    }
-
-    private void resizeColumnWidth(JTable table) {
-        final TableColumnModel columnModel = table.getColumnModel();
-        for (int column = 0; column < table.getColumnCount(); column++) {
-            int width = 15; // Min width
-            for (int row = 0; row < table.getRowCount(); row++) {
-                TableCellRenderer renderer = table.getCellRenderer(row, column);
-                Component comp = table.prepareRenderer(renderer, row, column);
-                width = Math.max(comp.getPreferredSize().width + 1, width);
+    private void loadData() {
+        try {
+            if (fileInput != null && Files.exists(fileInput)) {
+                List<String> lines = FileUtils.readLines(fileInput.toFile(), Charset.forName(Objects.requireNonNull(encoding.getSelectedItem()).toString()));
+                treeData.setModel(new TreeModel(lines, Objects.requireNonNull(delimiter.getSelectedItem()).toString()));
             }
-            columnModel.getColumn(column).setPreferredWidth(width);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(pnlMain, ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -247,10 +215,10 @@ public class MainScreen extends RetentiveFrame {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         pnlMain.add(scrollPane1, gbc);
-        tblData = new JTable();
-        tblData.setAutoResizeMode(0);
-        tblData.setFillsViewportHeight(true);
-        scrollPane1.setViewportView(tblData);
+        treeData = new JTree();
+//        tblData.setAutoResizeMode(0);
+//        tblData.setFillsViewportHeight(true);
+        scrollPane1.setViewportView(treeData);
         edtFileInput = new JTextField();
         edtFileInput.setBackground(new Color(-1));
         edtFileInput.setEditable(false);
