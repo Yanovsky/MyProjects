@@ -32,20 +32,55 @@ import com.google.zxing.common.BitMatrix;
 public class Generator {
     private static final String SEPARATOR = "^";
     private static final String HELP = "Use follows parameters:\n"+
-        "\tinput -\t\tInput text file contains data. Default is D:\\barcodes.txt\n"+
-        "\toutput -\tOutput file for store MS Word document. Default is D:\\barcodes.doc\n"+
-        "\tencoding -\tEncoding of the input text file. Default is UTF-8\n"+
-        "\tformat -\tFormat of the result barcodes. Default is PDF_417\n"+
+        "\t-input -\t\tInput text file contains data. Default is D:\\barcodes.txt\n"+
+        "\t-output -\tOutput file for store MS Word document. Default is D:\\barcodes.doc\n"+
+        "\t-encoding -\tEncoding of the input text file. Default is UTF-8\n"+
+        "\t-format -\tFormat of the result barcodes. Default is PDF_417\n"+
         "\t\t\t\tYou can use one of:\n"+
         getFormatString()+"\n"+
         "For example:\n" +
         "\tbarcodeGenerator /?\n"+
         "\t\t Shows this help\n"+
-        "\tbarcodeGenerator input=D:\\1\\barcodes.txt output=D:\\1\\result.doc encoding=cp1251 separator=~\n"+
+        "\tbarcodeGenerator -input=D:\\1\\barcodes.txt -output=D:\\1\\result.doc -encoding=cp1251 -separator=~\n"+
         "";
 
     private static String getFormatString() {
         return Stream.of(BarcodeFormat.values()).map(s -> "\t\t\t\t\t"+s.name()).collect(Collectors.joining("\n"));
+    }
+
+    public static void main(String[] args) {
+        try {
+            Properties props = new Properties();
+            props.putAll(Stream.of(args).collect(Collectors.toMap(s -> StringUtils.substringBefore(s, "="), v -> StringUtils.substringAfter(v, "="))));
+            if (props.isEmpty()) {
+                MainScreen mainScreen = new MainScreen("barcodeGenerator.properties");
+                mainScreen.setVisible(true);
+                return;
+            }
+            String separator = props.getProperty("-separator", SEPARATOR);
+            if (props.containsKey("-h") || props.containsKey("--h") || props.containsKey("/?")) {
+                System.out.println(HELP);
+                return;
+            }
+            Path inputFile = Paths.get(props.getProperty("-input", "D:\\barcodes.txt"));
+            if (Files.notExists(inputFile)) {
+                throw new Exception("File " + inputFile + " is absent");
+            }
+            Path outputFile = Paths.get(props.getProperty("-output", "D:\\barcodes.doc"));
+            Charset encoding = Charset.forName(props.getProperty("-encoding", StandardCharsets.UTF_8.name()));
+            BarcodeFormat format = BarcodeFormat.valueOf(props.getProperty("-format", BarcodeFormat.PDF_417.name()));
+
+            Map<String, List<String>> excises = FileUtils.readLines(inputFile.toFile(), encoding).stream()
+                .collect(
+                    Collectors.groupingBy(
+                        s -> StringUtils.substringBefore(s, separator),
+                        Collectors.mapping(n -> StringUtils.substringAfter(n, separator), Collectors.toList())
+                    )
+                );
+            generate(format, excises, outputFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -92,40 +127,5 @@ public class Generator {
         out.close();
         document.close();
         System.out.println("Result file "+outputFile.toString()+" has complete");
-    }
-
-    public static void main(String[] args) {
-        try {
-            Properties props = new Properties();
-            props.putAll(Stream.of(args).collect(Collectors.toMap(s -> StringUtils.substringBefore(s, "="), v -> StringUtils.substringAfter(v, "="))));
-            if (props.isEmpty()) {
-                MainScreen mainScreen = new MainScreen("barcodeGenerator.properties");
-                mainScreen.setVisible(true);
-                return;
-            }
-            String separator = props.getProperty("separator", SEPARATOR);
-            if (props.containsKey("-h") || props.containsKey("--h") || props.containsKey("/?")) {
-                System.out.println(HELP);
-                return;
-            }
-            Path inputFile = Paths.get(props.getProperty("input", "D:\\barcodes.txt"));
-            if (Files.notExists(inputFile)) {
-                throw new Exception("File " + inputFile + " is absent");
-            }
-            Path outputFile = Paths.get(props.getProperty("output", "D:\\barcodes.doc"));
-            Charset encoding = Charset.forName(props.getProperty("encoding", StandardCharsets.UTF_8.name()));
-            BarcodeFormat format = BarcodeFormat.valueOf(props.getProperty("format", BarcodeFormat.PDF_417.name()));
-
-            Map<String, List<String>> excises = FileUtils.readLines(inputFile.toFile(), encoding).stream()
-                .collect(
-                    Collectors.groupingBy(
-                        s -> StringUtils.substringBefore(s, separator),
-                        Collectors.mapping(n -> StringUtils.substringAfter(n, separator), Collectors.toList())
-                    )
-                );
-            generate(format, excises, outputFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
