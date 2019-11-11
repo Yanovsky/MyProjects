@@ -216,6 +216,9 @@ public class MainScreen extends RetentiveFrame {
         gbc.fill = GridBagConstraints.BOTH;
         pnlMain.add(scrollPane1, gbc);
         treeData = new JTree();
+        treeData.setModel(null);
+        treeData.setRootVisible(false);
+        treeData.setShowsRootHandles(true);
 //        tblData.setAutoResizeMode(0);
 //        tblData.setFillsViewportHeight(true);
         scrollPane1.setViewportView(treeData);
