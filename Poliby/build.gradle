@@ -1,0 +1,49 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+
+    }
+}
+
+dependencies {
+    compile(
+        'org.junit.jupiter:junit-jupiter-api:+'
+    )
+}
+
+jar {
+    manifest {
+        attributes(
+            'Manifest-Version': '1.0',
+            'Main-Class': 'ru.jane.Main',
+            'Class-Path': configurations.compile.collect { 'lib/'+it.getName() }.join(' ')
+        )
+    }
+}
+
+task copyToLib(type: Copy) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+    dependsOn jar
+}
+
+task make {
+    dependsOn copyToLib
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
