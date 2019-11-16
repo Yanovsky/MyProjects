@@ -3,6 +3,8 @@ package ru.alex.barcode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,51 +79,48 @@ public class Generator {
                         Collectors.mapping(n -> StringUtils.substringAfter(n, separator), Collectors.toList())
                     )
                 );
-            generate(format, excises, outputFile);
+            generate(format, excises, outputFile, i -> {});
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @SuppressWarnings("WeakerAccess")
-    public static void generate(BarcodeFormat format, Map<String, List<String>> barcodes, Path outputFile) throws Exception {
+    public static void generate(BarcodeFormat format, Map<String, List<String>> barcodes, Path outputFile, Consumer<Integer> progress) throws Exception {
         if (outputFile == null) {
             throw new Exception("Не указан файл для выгрузки");
         }
         MultiFormatWriter barcodeProducer = new MultiFormatWriter();
         XWPFDocument document = new XWPFDocument();
 
-        AtomicInteger i = new AtomicInteger(0);
-        barcodes.forEach((titleText, list) -> {
-            try {
-                XWPFParagraph title = document.createParagraph();
-                title.setAlignment(ParagraphAlignment.CENTER);
-                XWPFRun text = title.createRun();
-                text.setBold(true);
-                text.setFontSize(18);
-                text.setText(titleText);
-                System.out.println("Start generating excises for '" + titleText + "':");
-                list.forEach(barcode -> {
-                    try {
-                        BitMatrix matrix = barcodeProducer.encode(barcode, format, 0, 0);
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        MatrixToImageWriter.writeToStream(matrix, "PNG", stream);
-                        XWPFParagraph paragraph = document.createParagraph();
-                        paragraph.setAlignment(ParagraphAlignment.CENTER);
-                        XWPFRun paragraphRun = paragraph.createRun();
-                        paragraphRun.addPicture(new ByteArrayInputStream(stream.toByteArray()), XWPFDocument.PICTURE_TYPE_PNG, "", Units.toEMU(matrix.getWidth()), Units.toEMU(matrix.getHeight()));
-                        System.out.println("\tImage for barcode '" + barcode + "' has been added");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-                if (i.incrementAndGet() < barcodes.size()) {
-                    document.createParagraph().createRun().addBreak(BreakType.PAGE);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+        int total = barcodes.values().stream().mapToInt(List::size).sum();
+        int current = 0;
+        int i = 0;
+        for (Map.Entry<String, List<String>> entry : barcodes.entrySet()) {
+            String titleText = entry.getKey();
+            List<String> list = entry.getValue();
+            XWPFParagraph title = document.createParagraph();
+            title.setAlignment(ParagraphAlignment.CENTER);
+            XWPFRun text = title.createRun();
+            text.setBold(true);
+            text.setFontSize(18);
+            text.setText(titleText);
+            System.out.println("Start generating excises for '" + titleText + "':");
+            XWPFParagraph paragraph = document.createParagraph();
+            paragraph.setAlignment(ParagraphAlignment.CENTER);
+            XWPFRun paragraphRun = paragraph.createRun();
+            for (String barcode : list) {
+                BitMatrix matrix = barcodeProducer.encode(barcode, format, 150, 150);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                MatrixToImageWriter.writeToStream(matrix, "PNG", stream);
+                paragraphRun.addPicture(new ByteArrayInputStream(stream.toByteArray()), XWPFDocument.PICTURE_TYPE_PNG, "", Units.toEMU(matrix.getWidth()), Units.toEMU(matrix.getHeight()));
+                System.out.println("\tImage for barcode '" + barcode + "' has been added");
+                progress.accept(BigDecimal.valueOf(++current).divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100.0)).intValue());
             }
-        });
+            if (++i < barcodes.size()) {
+                document.createParagraph().createRun().addBreak(BreakType.PAGE);
+            }
+        }
         FileOutputStream out = new FileOutputStream(outputFile.toFile());
         document.write(out);
         out.close();

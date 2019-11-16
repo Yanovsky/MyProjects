@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -28,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -55,6 +57,7 @@ public class MainScreen extends RetentiveFrame {
     private JPanel pnlMain;
     private JComboBox<Character> delimiter;
     private JTree treeData;
+    private JProgressBar progressBar1;
 
     @Override
     protected void saveParameters() {
@@ -155,7 +158,7 @@ public class MainScreen extends RetentiveFrame {
         delimiter.addActionListener(e -> loadData());
         encoding.addActionListener(e -> loadData());
 
-        btnBegin.addActionListener(e -> {
+        btnBegin.addActionListener(e -> Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 Map<String, List<String>> data = ((TreeModel) treeData.getModel()).getData();
                 if (data.isEmpty()) {
@@ -164,7 +167,9 @@ public class MainScreen extends RetentiveFrame {
                 if (data.values().stream().allMatch(List::isEmpty)) {
                     throw new Exception("Список акцизных марок пуст.\nПроверьте правильно ли выбран разделитель");
                 }
-                Generator.generate((BarcodeFormat) barcodeType.getSelectedItem(), data, fileOutput);
+
+                Generator.generate((BarcodeFormat) barcodeType.getSelectedItem(), data, fileOutput, progressBar1::setValue);
+
                 if (JOptionPane.showInternalConfirmDialog(
                     pnlMain,
                     String.format("Файл %s сформирован\nОткрыть в MS Word?", fileOutput.toString()),
@@ -178,7 +183,7 @@ public class MainScreen extends RetentiveFrame {
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(pnlMain, ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
-        });
+        }));
         loadParameters();
     }
 
@@ -245,18 +250,19 @@ public class MainScreen extends RetentiveFrame {
         gbc.fill = GridBagConstraints.BOTH;
         pnlMain.add(panel1, gbc);
         panel1.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0), null));
-        btnBegin = new JButton();
-        btnBegin.setText("Начать");
+        progressBar1 = new JProgressBar();
+        progressBar1.setBorderPainted(true);
+        progressBar1.setIndeterminate(false);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel1.add(btnBegin, gbc);
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel1.add(progressBar1, gbc);
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 3;
-        gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.VERTICAL;
         pnlMain.add(spacer1, gbc);
         final JLabel label3 = new JLabel();
@@ -370,6 +376,22 @@ public class MainScreen extends RetentiveFrame {
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         pnlMain.add(spacer5, gbc);
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 9;
+        gbc.fill = GridBagConstraints.BOTH;
+        pnlMain.add(panel2, gbc);
+        panel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0), null));
+        btnBegin = new JButton();
+        btnBegin.setText("Начать");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel2.add(btnBegin, gbc);
     }
 
     /**
