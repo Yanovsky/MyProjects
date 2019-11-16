@@ -115,7 +115,8 @@ public class Generator {
                 MatrixToImageWriter.writeToStream(matrix, "PNG", stream);
                 paragraphRun.addPicture(new ByteArrayInputStream(stream.toByteArray()), XWPFDocument.PICTURE_TYPE_PNG, "", Units.toEMU(matrix.getWidth()), Units.toEMU(matrix.getHeight()));
                 System.out.println("\tImage for barcode '" + barcode + "' has been added");
-                progress.accept(BigDecimal.valueOf(++current).divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100.0)).intValue());
+                int percent = BigDecimal.valueOf(++current).divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100.0)).intValue();
+                progress.accept(percent);
             }
             if (++i < barcodes.size()) {
                 document.createParagraph().createRun().addBreak(BreakType.PAGE);

@@ -64,6 +64,7 @@
             <properties>
               <borderPainted value="true"/>
               <indeterminate value="false"/>
+              <stringPainted value="false"/>
             </properties>
           </component>
         </children>

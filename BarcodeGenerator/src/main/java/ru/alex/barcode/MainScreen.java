@@ -158,8 +158,11 @@ public class MainScreen extends RetentiveFrame {
         delimiter.addActionListener(e -> loadData());
         encoding.addActionListener(e -> loadData());
 
-        btnBegin.addActionListener(e -> Executors.newSingleThreadExecutor().execute(() -> {
+        btnBegin.addActionListener(event -> Executors.newSingleThreadExecutor().execute(() -> {
             try {
+                MainScreen.this.setEnabled(false);
+                progressBar1.setStringPainted(true);
+                progressBar1.setString(String.format("Выполнено %d %%", 0));
                 Map<String, List<String>> data = ((TreeModel) treeData.getModel()).getData();
                 if (data.isEmpty()) {
                     throw new Exception("Список пуст");
@@ -168,20 +171,29 @@ public class MainScreen extends RetentiveFrame {
                     throw new Exception("Список акцизных марок пуст.\nПроверьте правильно ли выбран разделитель");
                 }
 
-                Generator.generate((BarcodeFormat) barcodeType.getSelectedItem(), data, fileOutput, progressBar1::setValue);
-
+                Generator.generate((BarcodeFormat) barcodeType.getSelectedItem(), data, fileOutput, percent -> {
+                    progressBar1.setValue(percent);
+                    progressBar1.setStringPainted(true);
+                    progressBar1.setString(String.format("Выполнено %d %%", percent));
+                });
+                MainScreen.this.setEnabled(true);
                 if (JOptionPane.showInternalConfirmDialog(
                     pnlMain,
                     String.format("Файл %s сформирован\nОткрыть в MS Word?", fileOutput.toString()),
                     "Готово",
                     JOptionPane.YES_NO_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION) {
+                    JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION)
+                {
                     if (Desktop.isDesktopSupported()) {
                         Desktop.getDesktop().open(fileOutput.toFile());
                     }
                 }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(pnlMain, ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                MainScreen.this.setEnabled(true);
+                JOptionPane.showMessageDialog(pnlMain, e.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                progressBar1.setString("");
+                progressBar1.setStringPainted(false);
             }
         }));
         loadParameters();
@@ -253,6 +265,7 @@ public class MainScreen extends RetentiveFrame {
         progressBar1 = new JProgressBar();
         progressBar1.setBorderPainted(true);
         progressBar1.setIndeterminate(false);
+        progressBar1.setStringPainted(false);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
