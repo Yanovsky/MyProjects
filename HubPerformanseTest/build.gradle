@@ -1,0 +1,56 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+
+    }
+}
+
+dependencies {
+    compile(
+            'com.mashape.unirest:unirest-java:1.4.9',
+            'org.apache.commons:commons-lang3:+',
+            //'org.apache.commons:commons-collections4:+',
+            'commons-io:commons-io:2.6',
+            'com.fasterxml.jackson.core:jackson-core:2.9.7',
+            'com.fasterxml.jackson.core:jackson-annotations:2.9.7',
+            'com.fasterxml.jackson.core:jackson-databind:2.9.7',
+            'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7'
+    )
+}
+
+jar {
+    manifest {
+        attributes(
+            'Manifest-Version': '1.0',
+            'Main-Class': 'ru.jane.Main',
+            'Class-Path': configurations.compile.collect { 'lib/'+it.getName() }.join(' ')
+        )
+    }
+}
+
+task copyToLib(type: Copy) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+    dependsOn jar
+}
+
+task make {
+    dependsOn copyToLib
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
