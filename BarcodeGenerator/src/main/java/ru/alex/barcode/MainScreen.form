@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="ru.alex.barcode.MainScreen">
   <grid id="27dc6" binding="pnlMain" layout-manager="GridBagLayout">
     <constraints>
-      <xy x="20" y="20" width="574" height="424"/>
+      <xy x="20" y="20" width="601" height="424"/>
     </constraints>
     <properties/>
     <border type="empty">
@@ -56,20 +56,22 @@
           <size top="5" left="0" bottom="0" right="0"/>
         </border>
         <children>
-          <component id="85780" class="javax.swing.JButton" binding="btnBegin">
+          <component id="3c320" class="javax.swing.JProgressBar" binding="progressBar1" default-binding="true">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-              <gridbag weightx="0.0" weighty="0.0"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <gridbag weightx="1.0" weighty="0.0"/>
             </constraints>
             <properties>
-              <text value="Начать"/>
+              <borderPainted value="true"/>
+              <indeterminate value="false"/>
+              <stringPainted value="false"/>
             </properties>
           </component>
         </children>
       </grid>
       <vspacer id="192b3">
         <constraints>
-          <grid row="3" column="1" row-span="1" col-span="3" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
           <gridbag weightx="0.0" weighty="0.0"/>
         </constraints>
       </vspacer>
@@ -200,6 +202,27 @@
           <gridbag weightx="0.0" weighty="0.0"/>
         </constraints>
       </hspacer>
+      <grid id="8226f" layout-manager="GridBagLayout">
+        <constraints>
+          <grid row="8" column="0" row-span="1" col-span="9" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties/>
+        <border type="empty">
+          <size top="10" left="0" bottom="0" right="0"/>
+        </border>
+        <children>
+          <component id="85780" class="javax.swing.JButton" binding="btnBegin">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <gridbag weightx="0.0" weighty="0.0"/>
+            </constraints>
+            <properties>
+              <text value="Начать"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
     </children>
   </grid>
 </form>

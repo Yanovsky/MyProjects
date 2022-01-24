@@ -1,0 +1,38 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+    }
+}
+
+dependencies {
+    repositories {
+        maven {
+            url "https://dl.bintray.com/dreamkas/start-utils"
+        }
+    }
+    compile(
+            files('lib/atol/libfptr10.jar'),
+            'ru.dreamkas.utils:versions-utils-java:1.5.7',
+            'ru.dreamkas.utils:time-utils:1.5.7',
+            'org.apache.commons:commons-lang3:3.8.1',
+            'commons-io:commons-io:2.6',
+            'com.fasterxml.jackson.core:jackson-core:+',
+            'com.fasterxml.jackson.core:jackson-annotations:+',
+            'com.fasterxml.jackson.core:jackson-databind:+',
+            'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:+'
+    )
+}
+

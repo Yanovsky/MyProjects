@@ -1,0 +1,44 @@
+//file:noinspection GradlePackageUpdate
+plugins {
+    id('java')
+    id('idea')
+}
+
+group "ru.dreamkas.ucs"
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    mainClassName = "ru.dreamkas.ucs.Main"
+}
+
+dependencies {
+    compile "net.java.dev.jna:jna:4.5.2",
+    "org.apache.commons:commons-lang3:3.7",
+    "commons-io:commons-io:2.6"
+}
+
+task listAllDependencies(type: DependencyReportTask) {}
+
+jar {
+    manifest {
+        attributes(
+                "Main-Class": mainClassName,
+                "Project": project.name,
+                "Version" : '1.0',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+        )
+    }
+}
+
+task copyToLib(type: Copy) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+    dependsOn jar
+}
+
+task make {
+    dependsOn copyToLib
+}

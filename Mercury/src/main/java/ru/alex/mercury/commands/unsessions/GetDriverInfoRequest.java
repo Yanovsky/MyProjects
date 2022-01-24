@@ -1,9 +1,9 @@
 package ru.alex.mercury.commands.unsessions;
 
-import ru.alex.mercury.commands.Command;
+import ru.alex.mercury.commands.Request;
 
-public class GetDriverInfo extends Command {
-    public GetDriverInfo() {
-        command = "GetDriverInfo";
+public class GetDriverInfoRequest extends Request {
+    public GetDriverInfoRequest() {
+        setCommand("GetDriverInfo");
     }
 }

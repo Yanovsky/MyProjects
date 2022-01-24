@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="/Mercury.main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: ru.dreamkas.utils:versions-utils-java:1.5.7"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: org.apache.commons:commons-lang3:3.8.1"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: commons-io:commons-io:2.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.3"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: com.fasterxml.jackson.core:jackson-databind:2.10.3"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: com.fasterxml.jackson.core:jackson-core:2.10.3"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: com.fasterxml.jackson.core:jackson-annotations:2.10.3"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Gradle: org.jetbrains:annotations:15.0"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

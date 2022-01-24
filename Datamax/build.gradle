@@ -1,0 +1,84 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    maven {
+        url "https://dreamkas.jfrog.io/artifactory/start-utils-gradle-release-local"
+    }
+    mavenCentral()
+    maven {
+        url "http://repo.e-iceblue.com/nexus/content/groups/public/"
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+ext {
+    utils_version = "1.5.13"
+}
+
+dependencies {
+    compile(
+            fileTree(dir: 'libs', include: '**/*.jar'),
+            "commons-configuration:commons-configuration:1.10",
+            'org.apache.commons:commons-lang3:3.8.1',
+            'commons-io:commons-io:2.6',
+            'com.google.code.gson:gson:2.6.2',
+            'org.apache.poi:poi:3.17',
+            'org.apache.poi:poi-ooxml:3.17',
+            'org.apache.poi:poi-ooxml-schemas:3.17',
+            'org.apache.poi:ooxml-schemas:1.0',
+            'fr.opensagres.xdocreport:fr.opensagres.poi.xwpf.converter.pdf:2.0.1',
+            'org.freehep:freehep-graphicsio-emf:2.4',
+            'org.jmdns:jmdns:3.5.6',
+
+            'e-iceblue:spire.pdf.free:+'
+    )
+    compile (
+            "ru.dreamkas.utils:time-utils:${utils_version}"
+    )
+}
+
+task copyToLibJars(type: Copy) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+    dependsOn jar
+}
+
+task copyEXE(type: Copy) {
+    from ('.') {
+        include 'VikiFactoryWorkplace_??.exe'
+    }
+    into "$buildDir/libs"
+    dependsOn copyToLibJars
+}
+
+task copyPPP(type: Copy) {
+    into "$buildDir/libs/ppp"
+    from 'ppp'
+    dependsOn copyEXE
+}
+
+task copyToLib(type: Copy) {
+    into "$buildDir/libs/lib"
+    from 'libs'
+    exclude '**/*.jar'
+    dependsOn copyPPP
+}
+
+task zip(type: Zip, dependsOn: copyToLib) {
+    from "$buildDir/libs"
+    baseName = "workplace"
+    destinationDir = file("$buildDir")
+}
+
+jar {
+    baseName = 'VikiFactoryAssemblyWorkplace'
+}

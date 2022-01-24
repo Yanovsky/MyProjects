@@ -1,6 +1,8 @@
-package ru.dreamkas.start.server;
+package ru.alex.mercury.mapper;
 
 import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -23,7 +25,12 @@ public class SemverJacksonModule {
         return new JsonDeserializer<Version>() {
             @Override
             public Version deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-                return Version.of(p.getValueAsString());
+                String valueAsString = p.getValueAsString();
+                if (StringUtils.countMatches(valueAsString, '.') > 2) {
+                    String version = StringUtils.substringBeforeLast(valueAsString, ".") + "+" + StringUtils.substringAfterLast(valueAsString, ".");
+                    return Version.of(version);
+                }
+                return Version.of(valueAsString);
             }
         };
     }
